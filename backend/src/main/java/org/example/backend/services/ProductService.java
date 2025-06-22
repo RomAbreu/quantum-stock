@@ -1,7 +1,7 @@
-package org.example.backend.service;
+package org.example.backend.services;
 
 import org.example.backend.models.Product;
-import org.example.backend.repository.ProductRepository;
+import org.example.backend.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
