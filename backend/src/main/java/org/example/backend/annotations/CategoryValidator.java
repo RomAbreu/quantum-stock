@@ -1,8 +1,7 @@
-package org.example.backend.validators;
+package org.example.backend.annotations;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.example.backend.annotations.ValidProductCategory;
 import org.example.backend.enums.Category;
 
 import java.util.Arrays;
@@ -24,7 +23,7 @@ public class CategoryValidator implements ConstraintValidator<ValidProductCatego
 
         // Check if the provided category is in the allowed categories
         return Arrays.stream(categories)
-                .anyMatch(category -> category.name().equalsIgnoreCase(s));
+                .anyMatch(category -> category.name().equals(s));
     }
 
 

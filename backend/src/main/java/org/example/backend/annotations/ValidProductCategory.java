@@ -3,7 +3,6 @@ package org.example.backend.annotations;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import org.example.backend.enums.Category;
-import org.example.backend.validators.CategoryValidator;
 
 import java.lang.annotation.*;
 
