@@ -1,0 +1,28 @@
+services:
+  inventory-db-service:
+    image: mysql:latest
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${MYSQL_PORT}
+    volumes:
+      - ${VOLUME_PATH}:/var/lib/mysql
+
+#  app-service:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      - DATABASE_URL=${DATABASE_URL}
+#      - SERVER_PORT=${SERVER_PORT:-8080}
+#      - DATABASE_USER=${MYSQL_USER}
+#      - DATABASE_PASSWORD=${MYSQL_PASSWORD}
+#    ports:
+#      - ${SERVER_PORT:-8080}:${SERVER_PORT:-8080}
+#    restart: always
+#    depends_on:
+#      - inventory-db-service
