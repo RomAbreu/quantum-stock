@@ -1,14 +1,13 @@
 package org.example.backend.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.example.backend.annotations.ValidProductCategory;
 import org.example.backend.enums.Category;
-import org.springframework.data.annotation.Id;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -16,9 +15,9 @@ import org.springframework.data.annotation.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product")
-public class Product {
+public class Product implements Serializable {
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Product name is required")
@@ -35,15 +34,15 @@ public class Product {
                                     Category.FOOD, Category.PET_SUPPLIES, Category.AUTOMOTIVE})
     private String category;
 
-    @NotBlank(message = "Product price is required")
+    @NotNull(message = "Product price is required")
     @DecimalMin(value = "0.0", message = "Product price must be greater than or equal to 0.0")
-    private double price;
+    private BigDecimal price;
 
-    @NotBlank(message = "Product quantity is required")
+    @NotNull(message = "Product quantity is required")
     @Min(value = 0, message = "Product quantity must be greater than or equal to 0")
     private int quantity;
 
-    @NotBlank(message = "Product minimum quantity is required")
+    @NotNull(message = "Product minimum quantity is required")
     @Min(value = 1, message = "Product minimum quantity must be greater than or equal to 1")
     private int minQuantity;
 }
