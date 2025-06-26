@@ -1,9 +1,13 @@
 package org.example.backend.services;
 
+import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.repositories.ProductRepository;
+import org.example.backend.specifications.ProductSpecifications;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,8 +18,33 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<Product> getAllProducts(ProductFilter filters) {
+        Specification<Product> spec = buildSpecification(filters);
+        return productRepository.findAll(spec);
+    }
+
+    private Specification<Product> buildSpecification(ProductFilter filters) {
+        List<Specification<Product>> specs = new ArrayList<>();
+
+        if (filters.id() != null) {
+            specs.add(ProductSpecifications.hasId(filters.id()));
+        }
+
+        if (filters.name() != null && !filters.name().isEmpty()) {
+            specs.add(ProductSpecifications.hasName(filters.name()));
+        }
+
+        if (filters.category() != null && !filters.category().isEmpty()) {
+            specs.add(ProductSpecifications.hasCategory(filters.category()));
+        }
+
+        if (filters.minPrice() != null || filters.maxPrice() != null) {
+            specs.add(ProductSpecifications.hasPriceBetween(filters.minPrice(), filters.maxPrice()));
+        }
+
+        return specs.isEmpty()
+                ? null
+                : Specification.allOf(specs);
     }
 
     public Product getProductById(Long id) {

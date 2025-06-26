@@ -2,6 +2,7 @@ package org.example.backend.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.services.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<Product>> getAllProducts(ProductFilter filters) {
+        return ResponseEntity.ok(productService.getAllProducts(filters));
     }
 
     @GetMapping("/{id}")
