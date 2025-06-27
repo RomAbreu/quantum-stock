@@ -1,5 +1,6 @@
 package org.example.backend.exception;
 
+import org.example.backend.dtos.ErrorMessage;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

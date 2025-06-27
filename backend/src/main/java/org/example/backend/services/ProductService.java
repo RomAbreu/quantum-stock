@@ -48,10 +48,6 @@ public class ProductService {
                 : Specification.allOf(specs);
     }
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
-    }
-
     public Product create(Product product) {
         return productRepository.save(product);
     }

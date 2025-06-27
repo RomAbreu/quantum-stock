@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.services.ProductService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,22 +18,17 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(filters, pageable));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
-    }
-
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Product> create(@RequestBody @Valid Product product) {
         return ResponseEntity.ok(productService.create(product));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody @Valid Product productDetails) {
         Product updatedProduct = productService.update(id, productDetails);
         if (updatedProduct != null) {
@@ -44,7 +37,7 @@ public class ProductController {
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Product> delete(@PathVariable Long id) {
         Product deletedProduct = productService.delete(id);
         if (deletedProduct != null) {
