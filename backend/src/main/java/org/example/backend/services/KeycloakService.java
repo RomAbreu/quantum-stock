@@ -46,18 +46,28 @@ public class KeycloakService {
 
             RealmResource realmResource = keycloakProvider.getRealmResource();
 
-            List<RoleRepresentation> roleRepresentations;
+            String id = realmResource.clients().findByClientId("quantum-stock-backend").getFirst().getId();
 
-            roleRepresentations = realmResource.roles()
+            List<RoleRepresentation> roleRepresentations = realmResource.clients().get(id)
+                    .roles()
                     .list()
                     .stream()
                     .filter(role -> role.getName().equals(userRequest.getRole()))
                     .toList();
 
-            realmResource.users().get(userId).roles().realmLevel().add(roleRepresentations);
-
+            realmResource
+                    .users()
+                    .get(userId)
+                    .roles()
+                    .clientLevel(id)
+                    .add(roleRepresentations);
         }
 
         return response.getStatus();
+    }
+
+    public List<UserRepresentation> getAllUsers() {
+        UsersResource usersResource = keycloakProvider.getUserResource();
+        return usersResource.list();
     }
 }
