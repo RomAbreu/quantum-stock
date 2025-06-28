@@ -143,7 +143,7 @@ export default function HeroSection() {
 				Revoluciona la gestión de tu inventario con{' '}
 				<span className="font-semibold text-primary-300">
 					precisión cuántica
-				</span>
+				</span>{' '}
 				. Optimiza, analiza y controla tu stock con inteligencia artificial y
 				análisis predictivo en tiempo real.
 			</motion.p>
