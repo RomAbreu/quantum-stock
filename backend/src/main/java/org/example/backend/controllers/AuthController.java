@@ -54,6 +54,24 @@ public class AuthController {
             );
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(errorMessage);
+        } catch (HttpClientErrorException e) {
+            ErrorMessage errorMessage = new ErrorMessage(
+                    new Date(),
+                    e.getStatusCode().value(),
+                    e.getStatusText(),
+                    e.getResponseBodyAsString()
+            );
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(errorMessage);
+        } catch (Exception e) {
+            ErrorMessage errorMessage = new ErrorMessage(
+                    new Date(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    "An unexpected error occurred"
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorMessage);
         }
 
         return ResponseEntity.status(response.getStatusCode())
