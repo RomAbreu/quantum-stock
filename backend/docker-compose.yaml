@@ -12,6 +12,17 @@ services:
     volumes:
       - ${VOLUME_PATH}:/var/lib/mysql
 
+  test-db-service:
+    image: mysql:latest
+    ports:
+      - "${TEST_MYSQL_PORT}:${TEST_MYSQL_PORT}"
+    environment:
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+      - MYSQL_USER=${TEST_MYSQL_USER}
+      - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${TEST_MYSQL_PORT}
+
   keycloak-service:
     image: keycloak/keycloak:26.2
     ports:
