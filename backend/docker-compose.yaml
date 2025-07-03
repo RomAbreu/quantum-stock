@@ -19,11 +19,11 @@ services:
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-#      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/keycloak-realm-export.json
+      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/keycloak-realm-export.json
     volumes:
       - ${KEYCLOAK_VOLUME_PATH}:/opt/keycloak/data
-#      - ./keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
-    command: [ "start-dev", "--http-port", "${KEYCLOAK_PORT:-9090}" ]
+      - ./keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
+    command: [ "start-dev", "--http-port", "${KEYCLOAK_PORT:-9090}", "--import-realm" ]
 
 
 #  app-service:
