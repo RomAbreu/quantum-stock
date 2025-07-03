@@ -3,6 +3,7 @@ package org.example.backend.components;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.backend.dtos.LoginRequest;
+import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -20,6 +21,8 @@ public class QuantumStockHttpClient {
     private final static String LOGIN_ENDPOINT = "/api/v1/auth/login";
     private final static String CREATE_PRODUCT_ENDPOINT = "/api/v1/products/create";
     private final static String UPDATE_PRODUCT_ENDPOINT = "/api/v1/products/update";
+    private final static String DELETE_PRODUCT_ENDPOINT = "/api/v1/products/delete";
+    private final static String GET_ALL_PRODUCTS_ENDPOINT = "/api/v1/products/all";
 
     @LocalServerPort
     private String port;
@@ -51,6 +54,14 @@ public class QuantumStockHttpClient {
 
     private String getUpdateProductUrl() {
         return SERVER_URL + port + UPDATE_PRODUCT_ENDPOINT;
+    }
+
+    private String getDeleteProductUrl() {
+        return SERVER_URL + port + DELETE_PRODUCT_ENDPOINT;
+    }
+
+    private String getGetAllProductsUrl() {
+        return SERVER_URL + port + GET_ALL_PRODUCTS_ENDPOINT;
     }
 
     public String getAccessToken(String username, String password) {
@@ -91,6 +102,44 @@ public class QuantumStockHttpClient {
                 getUpdateProductUrl() + "/" + product.getId(),
                 HttpMethod.PUT,
                 new HttpEntity<>(product, headers),
+                String.class
+        );
+    }
+
+    public ResponseEntity<String> deleteProduct(int productId, String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return restTemplate.exchange(
+                getDeleteProductUrl() + "/" + productId,
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                String.class
+        );
+    }
+
+    public ResponseEntity<String> getAllProducts(ProductFilter filters) {
+        String url = getGetAllProductsUrl();
+
+        if (filters != null) {
+            url += "?";
+            if (filters.name() != null) {
+                url += "name=" + filters.name() + "&";
+            }
+            if (filters.category() != null) {
+                url += "category=" + filters.category() + "&";
+            }
+            if (filters.minPrice() != null) {
+                url += "minPrice=" + filters.minPrice() + "&";
+            }
+            if (filters.maxPrice() != null) {
+                url += "maxPrice=" + filters.maxPrice() + "&";
+            }
+        }
+
+        return restTemplate.getForEntity(
+                url,
                 String.class
         );
     }
