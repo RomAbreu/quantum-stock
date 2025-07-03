@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.backend.dtos.LoginRequest;
 import org.example.backend.models.Product;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 import static io.cucumber.spring.CucumberTestContext.SCOPE_CUCUMBER_GLUE;
 
@@ -96,14 +93,5 @@ public class QuantumStockHttpClient {
                 new HttpEntity<>(product, headers),
                 String.class
         );
-    }
-
-    public ResponseEntity<String> login(String username, String password) {
-        LoginRequest body = new LoginRequest(username, password);
-        return restTemplate.postForEntity(getLoginUrl(), body, String.class);
-    }
-
-    public ResponseEntity<String> loginNoBody() {
-        return restTemplate.postForEntity(getLoginUrl(), null, String.class);
     }
 }
