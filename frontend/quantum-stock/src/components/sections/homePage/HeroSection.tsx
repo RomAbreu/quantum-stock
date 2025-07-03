@@ -2,8 +2,8 @@
 
 import { Button, Image, Link } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { NavbarLinks } from '@lib/constants/navbar.constants';
 import { type Variants, motion } from 'framer-motion';
+import { EndpointEnum } from '@lib/constants/routes.constants';
 
 export default function HeroSection() {
 	const containerVariants: Variants = {
@@ -160,7 +160,7 @@ export default function HeroSection() {
 				>
 					<Button
 						as={Link}
-						href={NavbarLinks.SIGNUP}
+						href={EndpointEnum.Login}
 						size="lg"
 						color="primary"
 						className="px-8 py-6 text-base font-semibold text-white transition-all duration-300 shadow-lg bg-primary hover:bg-primary-600 hover:shadow-primary/25"
