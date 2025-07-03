@@ -1,0 +1,46 @@
+{
+	"name": "quantum-stock",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbopack",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"biome": "biome check --write"
+	},
+	"dependencies": {
+		"@fontsource-variable/onest": "^5.2.9",
+		"@heroui/react": "^2.7.11",
+		"@react-keycloak/web": "^3.4.0",
+		"autoprefixer": "^10.4.21",
+		"framer-motion": "^12.19.1",
+		"jose": "^6.0.11",
+		"keycloak-js": "^26.2.0",
+		"next": "15.3.4",
+		"postcss": "^8.5.3",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"recharts": "^3.0.0",
+		"swr": "^2.3.4",
+		"tailwindcss": "3",
+		"use-debounce": "^10.0.5",
+		"usehooks-ts": "^3.1.1",
+		"zustand": "^5.0.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@iconify/react": "^6.0.0",
+		"@tailwindcss/postcss": "^4",
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"typescript": "^5"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@biomejs/biome",
+			"@heroui/shared-utils"
+		]
+	}
+}

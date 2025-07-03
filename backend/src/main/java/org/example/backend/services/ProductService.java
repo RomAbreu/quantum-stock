@@ -60,6 +60,7 @@ public class ProductService {
             product.setCategory(productDetails.getCategory());
             product.setPrice(productDetails.getPrice());
             product.setQuantity(productDetails.getQuantity());
+            product.setMinQuantity(productDetails.getMinQuantity());
             return productRepository.save(product);
         }
         return null;
