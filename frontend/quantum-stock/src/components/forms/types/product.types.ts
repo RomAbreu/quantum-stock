@@ -3,7 +3,7 @@ export type NewProductData = {
 	description: string;
 	category: string;
 	price: number;
-	initialQuantity: number;
+	quantity: number;
 	minQuantity: number;
 };
 
