@@ -19,8 +19,9 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { useKeycloak } from '@hooks/useKeycloak';
+import { useKeycloak } from '@react-keycloak/web';
 import { EndpointEnum } from '@lib/constants/routes.constants';
+import { navbarItems } from '@lib/constants/navbar.constants';
 
 export default function Navbar(props: Readonly<NavbarProps>) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,6 +62,24 @@ export default function Navbar(props: Readonly<NavbarProps>) {
                         className="rounded-full"
                     />
                 </NavbarBrand>
+            </NavbarContent>
+
+            <NavbarContent className="hidden sm:flex" justify="center">
+                {isAuthenticated && (
+                    <>
+                        {navbarItems.map((item) => (
+                            <NavbarItem key={item.label}>
+                                <Link 
+                                    href={item.href} 
+                                    className="flex items-center gap-1 px-3 py-1.5 transition-all duration-200 hover:scale-105 hover:bg-gray-800/60 rounded-lg"
+                                >
+                                    {item.icon}
+                                    {item.label}
+                                </Link>
+                            </NavbarItem>
+                        ))}
+                    </>
+                )}
             </NavbarContent>
 
             <NavbarContent className="hidden sm:flex" justify="end">
