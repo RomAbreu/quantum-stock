@@ -1,188 +1,214 @@
 'use client';
 
-import { createProduct } from '@/lib/actions/product.action';
+import { createProduct, updateProduct } from '@/lib/actions/product.action';
 import type { NewProductData } from '@components/forms/types/product.types';
-import { useEffect, useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import type Product from '@/lib/model/product.model';
+import { useState, useEffect } from 'react';
+import useSWRMutation from 'swr/mutation';
 
-const initialFormState:
-	| { success: boolean; product: any; errors?: never }
-	| { errors: { createProduct: string }; success?: never; product?: never } = {
-	success: false,
-	product: null,
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
+
+type UseProductFormProps = {
+  mode?: 'create' | 'edit';
+  initialProduct?: Product;
+  onSuccess?: (product: Product) => void;
+  onError?: (error: Error) => void;
+  onCancel?: () => void;
+  onChange?: () => void;
+  token: string;
 };
 
-export default function useProductForm(
-	onSave?: (product: NewProductData) => Promise<void>,
-	onCancel?: () => void,
-	onChange?: () => void, // Añadimos el parámetro onChange
-) {
-	// Form state para server action
-	const [state, formAction] = useFormState(createProduct, initialFormState);
-	const [isPending, startTransition] = useTransition();
+export default function useProductForm({
+  mode = 'create',
+  initialProduct,
+  onSuccess,
+  onError,
+  onCancel,
+  onChange,
+  token
+}: UseProductFormProps) {
+  // Initialize form data based on mode
+  const [formData, setFormData] = useState<NewProductData>({
+    name: initialProduct?.name ?? '',
+    description: initialProduct?.description ?? '',
+    category: initialProduct?.category ?? '',
+    price: initialProduct?.price ?? 0,
+    quantity: initialProduct?.quantity ?? 0,
+    minQuantity: initialProduct?.minQuantity ?? 0,
+  });
 
-	const [formData, setFormData] = useState<NewProductData>({
-		name: '',
-		description: '',
-		category: '',
-		price: 0,
-		initialQuantity: 0,
-		minQuantity: 0,
-	});
+  const [errors, setErrors] = useState<Partial<Record<keyof NewProductData, string>>>({});
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
 
-	const [errors, setErrors] = useState<
-		Partial<Record<keyof NewProductData, string>>
-	>({});
-	const [isFormValid, setIsFormValid] = useState<boolean>(false);
-	const [submitting, setSubmitting] = useState(false);
+  // SWR mutations
+  const createMutation = useSWRMutation(
+    `${API_URL}/products`,
+    (key, { arg }: { arg: NewProductData }) =>
+      createProduct({
+        url: key,
+        product: arg,
+        headers: { Authorization: `Bearer ${token}` },
+      })
+  );
 
-	// Validar formulario cada vez que cambian los datos
-	useEffect(() => {
-		const isValid = validateFormSilent();
-		setIsFormValid(isValid);
-	}, [formData]);
+  const updateMutation = useSWRMutation(
+    mode === 'edit' && initialProduct?.id ? `${API_URL}` : null,
+    (key, { arg }: { arg: Product }) =>
+      updateProduct({
+        url: `${key}/products/${arg.id}`,
+        product: arg,
+        headers: { Authorization: `Bearer ${token}` },
+      })
+  );
 
-	// Versión silenciosa de validateForm que no establece errores
-	const validateFormSilent = (): boolean => {
-		if (!formData.name.trim()) return false;
-		if (!formData.description.trim()) return false;
-		if (!formData.category) return false;
-		if (formData.price <= 0) return false;
-		if (formData.initialQuantity < 0) return false;
-		if (formData.minQuantity < 0) return false;
+  // Validate form whenever data changes
+  useEffect(() => {
+    const isValid = validateFormSilent();
+    setIsFormValid(isValid);
+    
+    if (onChange) {
+      onChange();
+    }
+  }, [formData]);
 
-		return true;
-	};
+  // Silent validation that doesn't set errors
+  const validateFormSilent = (): boolean => {
+    if (!formData.name.trim()) return false;
+    if (!formData.description.trim()) return false;
+    if (!formData.category) return false;
+    if (formData.price <= 0) return false;
+    if (formData.quantity < 0) return false;
+    if (formData.minQuantity < 0) return false;
 
-	// Función para validar el formulario y mostrar errores
-	const validateForm = (): boolean => {
-		const newErrors: Partial<Record<keyof NewProductData, string>> = {};
+    return true;
+  };
 
-		if (!formData.name.trim()) {
-			newErrors.name = 'El nombre es requerido';
-		}
+  // Validation with error messages
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof NewProductData, string>> = {};
 
-		if (!formData.description.trim()) {
-			newErrors.description = 'La descripción es requerida';
-		}
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es requerido';
+    }
 
-		if (!formData.category) {
-			newErrors.category = 'La categoría es requerida';
-		}
+    if (!formData.description.trim()) {
+      newErrors.description = 'La descripción es requerida';
+    }
 
-		if (formData.price <= 0) {
-			newErrors.price = 'El precio debe ser mayor a 0';
-		}
+    if (!formData.category) {
+      newErrors.category = 'La categoría es requerida';
+    }
 
-		if (formData.initialQuantity < 0) {
-			newErrors.initialQuantity = 'La cantidad inicial no puede ser negativa';
-		}
+    if (formData.price <= 0) {
+      newErrors.price = 'El precio debe ser mayor a 0';
+    }
 
-		if (formData.minQuantity < 0) {
-			newErrors.minQuantity = 'El stock mínimo no puede ser negativo';
-		}
+    if (formData.quantity < 0) {
+      newErrors.quantity = 'La cantidad inicial no puede ser negativa';
+    }
 
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
+    if (formData.minQuantity < 0) {
+      newErrors.minQuantity = 'El stock mínimo no puede ser negativo';
+    }
 
-	const updateField = (field: keyof NewProductData, value: string | number) => {
-		setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-		// Clear error when user starts typing
-		if (errors[field]) {
-			setErrors((prev) => ({ ...prev, [field]: undefined }));
-		}
+  const updateField = (field: keyof NewProductData, value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // Clear error when user updates field
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
-		// Notificar cambio
-		if (onChange) {
-			onChange();
-		}
-	};
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      category: '',
+      price: 0,
+      quantity: 0,
+      minQuantity: 0,
+    });
+    setErrors({});
+  };
 
-	const resetForm = () => {
-		setFormData({
-			name: '',
-			description: '',
-			category: '',
-			price: 0,
-			initialQuantity: 0,
-			minQuantity: 0,
-		});
-		setErrors({});
-	};
+  const handleCancel = () => {
+    resetForm();
+    if (onCancel) onCancel();
+  };
 
-	const handleCancel = () => {
-		resetForm();
-		if (onCancel) onCancel();
-	};
 
-	const handleServerAction = async (
-		event: React.FormEvent<HTMLFormElement>,
-		token: string | undefined,
-	) => {
-		event.preventDefault();
+  const submitForm = async (): Promise<Product | null> => {
+    if (!validateForm()) {
+      return null;
+    }
 
-		// Validación completa al intentar enviar (muestra errores)
-		if (!validateForm()) return;
+    try {
+      if (!token) {
+        throw new Error('Token de autenticación no encontrado. Por favor, inicie sesión nuevamente.');
+      }
 
-		if (!token) {
-			setErrors((prev) => ({
-				...prev,
-				form: 'Token de autenticación no encontrado. Por favor, inicie sesión nuevamente.',
-			}));
-			return;
-		}
+      // Format the data before submission - convert category to uppercase
+      const formattedData = {
+        ...formData,
+        // Ensure category is in uppercase format
+        category: formData.category.toUpperCase().replace(/ /g, '_')
+      };
 
-		setSubmitting(true);
+      let result;
 
-		try {
-			console.log('Sending product data:', formData);
+      if (mode === 'create') {
+        result = await createMutation.trigger(formattedData);
+      } else if (mode === 'edit' && initialProduct?.id) {
+        result = await updateMutation.trigger({
+          ...formattedData,
+          id: initialProduct.id,
+          quantity: formattedData.quantity,
+        } as Product);
+      }
 
-			const formDataObj = new FormData();
-			// Aquí añadir todos los campos del formulario al FormData
-			Object.entries(formData).forEach(([key, value]) => {
-				formDataObj.append(key, value.toString());
-			});
+      if (onSuccess && result) {
+        onSuccess(result);
+      }
 
-			startTransition(() => {
-				formAction({ formData: formDataObj, token });
-			});
+      resetForm();
+      return result;
+    } catch (error) {
+      console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} product:`, error);
+      
+      if (onError && error instanceof Error) {
+        onError(error);
+      }
+      
+      setErrors((prev) => ({
+        ...prev,
+        form: error instanceof Error 
+          ? error.message 
+          : 'Error al procesar el producto',
+      }));
+      
+      return null;
+    }
+  };
 
-			console.log('Server action response:', state);
 
-			if (state?.errors?.createProduct) {
-				throw new Error(state.errors.createProduct);
-			}
+  const isSubmitting = 
+    mode === 'create' 
+      ? createMutation.isMutating 
+      : updateMutation.isMutating;
 
-			if (onSave) {
-				await onSave(formData);
-			}
-
-			resetForm();
-		} catch (error) {
-			console.error('Error during product creation:', error);
-			setErrors((prev) => ({
-				...prev,
-				form:
-					error instanceof Error
-						? error.message
-						: 'Error al guardar el producto',
-			}));
-		} finally {
-			setSubmitting(false);
-		}
-	};
-
-	return {
-		formData,
-		errors,
-		isFormValid,
-		submitting,
-		isPending,
-		state,
-		updateField,
-		handleServerAction,
-		handleCancel,
-	};
+  return {
+    formData,
+    errors,
+    isFormValid,
+    isSubmitting,
+    updateField,
+    handleCancel,
+    submitForm,
+    resetForm,
+  };
 }
