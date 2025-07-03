@@ -1,7 +1,9 @@
 'use client';
 
 import { HeroUIProvider } from '@heroui/react';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { useRouter } from 'next/navigation';
+import { useKeycloak } from '@hooks/useKeycloak';
 
 // @ts-ignore
 declare module '@react-types/shared' {
@@ -12,9 +14,21 @@ declare module '@react-types/shared' {
 	}
 }
 
-export function Providers({
-	children,
-}: Readonly<{ children: React.ReactNode }>) {
+export function Providers({	children,}: Readonly<{ children: React.ReactNode }>) {
 	const router = useRouter();
-	return <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>;
+
+	const { keycloak, initOptions } = useKeycloak();
+	return (
+		<HeroUIProvider navigate={router.push}>
+			<ReactKeycloakProvider
+				authClient={keycloak}
+				initOptions={initOptions}
+				onEvent={(event, error) => {
+					console.log('[Keycloak event]', event, error);
+				}}
+			>
+				{children}
+			</ReactKeycloakProvider>
+		</HeroUIProvider>
+	);
 }

@@ -4,7 +4,6 @@ import '@/styles/globals.css';
 import MiniGridBackground from '@/components/backgrounds/MiniGridBackground';
 import Footer from '@/components/navigation/footer/Footer';
 import Navbar from '@/components/navigation/navbar/Navbar';
-import { NAVBAR_ITEMS } from '@/lib/constants/navbar.constants';
 import { Providers } from './providers';
 
 const onest = Onest({
@@ -17,7 +16,7 @@ export const metadata: Metadata = {
 	description: 'Quantum Stock es la mejor plataforma de gestión de inventarios',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
@@ -30,12 +29,12 @@ export default function RootLayout({
 				<Providers>
 					<MiniGridBackground />
 					<header className="sticky top-0 z-50">
-						<Navbar navbarItems={NAVBAR_ITEMS} />
+						<Navbar />
 					</header>
 					<main className="flex flex-col flex-grow min-h-[calc(100vh-200px)]">
 						{children}
 					</main>
-					<Footer footerItems={NAVBAR_ITEMS} />
+					<Footer />
 				</Providers>
 			</body>
 		</html>
