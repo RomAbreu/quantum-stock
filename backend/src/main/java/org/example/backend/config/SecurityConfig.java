@@ -31,7 +31,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/products/all").permitAll()
                         .anyRequest().authenticated()
                 )
