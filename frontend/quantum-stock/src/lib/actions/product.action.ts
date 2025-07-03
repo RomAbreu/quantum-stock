@@ -1,194 +1,80 @@
-'use server';
+import type { NewProductData } from '@/components/forms/types/product.types';
+import type Product from '@/lib/model/product.model';
 
-import { API_URL } from '@lib/constants/api.constants';
-import { EndpointEnum } from '@/lib/constants/routes.constants';
-import Method from '@lib/data/method.data';
-import Routes from '@lib/data/routes.data';
-import { revalidatePath } from 'next/cache';
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products`;
 
-const PRODUCT_ENDPOINT = EndpointEnum.Products;
-const CURRENT_PATH = `${API_URL}${PRODUCT_ENDPOINT}`;
-const CREATE_PATH = `${CURRENT_PATH}/create`;
-const UPDATE_PATH = `${CURRENT_PATH}/update/`;
-const DELETE_PATH = `${CURRENT_PATH}/delete/`;
+type ActionProps = {
+    url?: string;
+    product: Product;
+    headers?: Record<string, string>;
+};
 
-export async function createProduct(
-	prevState: unknown,
-	{ formData, token }: { formData: FormData; token: string },
-) {
-	try {
-		if (!token) {
-			throw new Error('No estás autenticado');
-		}
+export async function createProduct({
+  url,
+  product,
+  headers
+}: {
+  url: string;
+  product: NewProductData;
+  headers: { Authorization: string };
+}): Promise<Product> {
+  const response = await fetch(`${url}/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: JSON.stringify(product),
+  });
 
-		const product = Object.fromEntries(formData.entries());
-		const productDTO = {
-			name: product.name,
-			description: product.description,
-			category: product.category,
-			price: product.price,
-			quantity: product.quantity,
-			minQuantity: product.minQuantity,
-		};
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message ?? 'Error creating product');
+  }
 
-		const response = await fetch(CREATE_PATH, {
-			method: Method.POST,
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify(productDTO),
-		});
-
-		if (!response.ok) {
-			const errorText = await response.text();
-
-			try {
-				const errorData = JSON.parse(errorText);
-				throw new Error(
-					errorData?.message ??
-						`Error ${response.status}: No se pudo crear el producto`,
-				);
-			} catch (e) {
-				throw new Error(
-					`Error ${response.status}: No se pudo crear el producto`,
-				);
-			}
-		}
-
-		const result = await response.json();
-		revalidatePath(Routes.Stock);
-		return { success: true, product: result };
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			return {
-				errors: {
-					createProduct: error.message,
-				},
-			};
-		}
-
-		return {
-			errors: {
-				createProduct: 'Ha ocurrido un error al crear el producto',
-			},
-		};
-	}
+  return response.json();
 }
 
-export async function updateProduct(
-	prevState: unknown,
-	{ formData, token }: { formData: FormData; token: string },
-) {
-	try {
-		if (!token) {
-			throw new Error('No estás autenticado');
-		}
+export async function updateProduct({
+  url = API_URL,
+  product,
+  headers
+}: ActionProps): Promise<Product> {
+  const response = await fetch(`${API_URL}/update/${product.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: JSON.stringify(product),
+  });
 
-		const product = Object.fromEntries(formData.entries());
-		const productDTO = {
-			id: product.id,
-			name: product.name,
-			description: product.description,
-			category: product.category,
-			price: product.price,
-			quantity: product.quantity,
-			minQuantity: product.minQuantity,
-		};
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message ?? 'Error updating product');
+  }
 
-		const response = await fetch(`${UPDATE_PATH}${product.id}`, {
-			method: Method.PUT,
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify(productDTO),
-		});
-
-		if (!response.ok) {
-			const errorText = await response.text();
-
-			try {
-				const errorData = JSON.parse(errorText);
-				throw new Error(
-					errorData?.message ??
-						`Error ${response.status}: No se pudo actualizar el producto`,
-				);
-			} catch (e) {
-				throw new Error(
-					`Error ${response.status}: No se pudo actualizar el producto`,
-				);
-			}
-		}
-
-		const result = await response.json();
-		revalidatePath(Routes.Stock);
-		return { success: true, product: result };
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			return {
-				errors: {
-					updateProduct: error.message,
-				},
-			};
-		}
-
-		return {
-			errors: {
-				updateProduct: 'Ha ocurrido un error al actualizar el producto',
-			},
-		};
-	}
+  return response.json();
 }
 
-export async function deleteProduct(
-	prevState: unknown,
-	{ id, token }: { id: string; token: string },
-) {
-	try {
-		if (!token) {
-			throw new Error('No estás autenticado');
-		}
+export async function deleteProduct({
+  productId,
+  headers
+}: {
+  productId: string;
+  headers: { Authorization: string };
+}): Promise<void> {
+  const response = await fetch(`${API_URL}/delete/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
 
-		const response = await fetch(`${DELETE_PATH}${id}`, {
-			method: Method.DELETE,
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-		});
-
-		if (!response.ok) {
-			const errorText = await response.text();
-
-			try {
-				const errorData = JSON.parse(errorText);
-				throw new Error(
-					errorData?.message ??
-						`Error ${response.status}: No se pudo eliminar el producto`,
-				);
-			} catch (e) {
-				throw new Error(
-					`Error ${response.status}: No se pudo eliminar el producto`,
-				);
-			}
-		}
-
-		revalidatePath(Routes.Stock);
-		return { success: true };
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			return {
-				errors: {
-					deleteProduct: error.message,
-				},
-			};
-		}
-
-		return {
-			errors: {
-				deleteProduct: 'Ha ocurrido un error al eliminar el producto',
-			},
-		};
-	}
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message ?? 'Error al eliminar el producto');
+  }
 }
+
