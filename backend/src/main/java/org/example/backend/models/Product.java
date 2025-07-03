@@ -43,6 +43,6 @@ public class Product implements Serializable {
     private int quantity;
 
     @NotNull(message = "Product minimum quantity is required")
-    @Min(value = 1, message = "Product minimum quantity must be greater than or equal to 1")
+    @Min(value = 0, message = "Product minimum quantity must be greater than or equal to 0")
     private int minQuantity;
 }
