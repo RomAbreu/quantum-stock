@@ -51,12 +51,12 @@ export default function PricingAndStockSection({
 					label="Cantidad Inicial"
 					placeholder="0"
 					type="number"
-					value={formData.initialQuantity.toString()}
+					value={formData.quantity.toString()}
 					onValueChange={(value) =>
-						updateField('initialQuantity', Number.parseInt(value) || 0)
+						updateField('quantity', Number.parseInt(value) || 0)
 					}
-					isInvalid={!!errors.initialQuantity}
-					errorMessage={errors.initialQuantity}
+					isInvalid={!!errors.quantity}
+					errorMessage={errors.quantity}
 					startContent={
 						<Icon icon="lucide:package" className="text-default-400" />
 					}

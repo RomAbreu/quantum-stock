@@ -7,77 +7,81 @@ import BasicInformationSection from '@/components/addproduct/BasicInformationSec
 import FormActions from '@/components/addproduct/FormActions';
 import FormErrorDisplay from '@/components/addproduct/FormErrorDisplay';
 import PricingAndStockSection from '@/components/addproduct/PricingAndStockSection';
-import type { NewProductData } from '@components/forms/types/product.types';
-import useProductForm from '../../lib/hooks/useProductForm';
+import useProductForm from '@/lib/hooks/useProductForm';
+import type Product from '@/lib/model/product.model';
 
 export default function AddProductForm({
-	onSave,
-	onCancel,
-	isLoading = false,
-	onChange, // Nuevo prop
+  onSave,
+  onCancel,
+  isLoading = false,
+  onChange,
 }: Readonly<{
-	onSave?: (product: NewProductData) => Promise<void>;
-	onCancel: () => void;
-	isLoading?: boolean;
-	onChange?: () => void; // Callback para notificar cambios
+  onSave?: (product: Product) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+  onChange?: () => void;
 }>) {
-	const { keycloak: Keycloak } = useKeycloak();
-	const user = { token: Keycloak?.token };
+  const { keycloak } = useKeycloak();
+  const token = keycloak?.token ?? '';
 
-	const {
-		formData,
-		errors,
-		isFormValid,
-		submitting,
-		isPending,
-		state,
-		updateField,
-		handleServerAction,
-		handleCancel,
-	} = useProductForm(onSave, onCancel, onChange);
+  const {
+    formData,
+    errors,
+    isFormValid,
+    isSubmitting,
+    updateField,
+    handleCancel,
+    submitForm,
+  } = useProductForm({
+    mode: 'create',
+    onSuccess: async (product) => {
+      if (onSave) await onSave(product);
+    },
+    onError: (error) => console.error('Error creating product:', error),
+    onCancel,
+    onChange,
+    token,
+  });
 
-	// Handler que envuelve handleServerAction para pasar el token
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-		handleServerAction(event, user.token);
-	};
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submitForm();
+  };
 
-	// Determinar si los campos deben estar deshabilitados
-	const isDisabled = isLoading || submitting || isPending;
+  // Determine if fields should be disabled
+  const isDisabled = isLoading || isSubmitting;
 
-	// Obtener error del servidor
-	const serverError = state?.errors?.createProduct;
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Form error display */}
+      <FormErrorDisplay error={errors.form} />
 
-	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
-			{/* Errores del servidor */}
-			<FormErrorDisplay error={serverError} />
+      {/* Basic Information */}
+      <BasicInformationSection
+        formData={formData}
+        errors={errors}
+        updateField={updateField}
+        isDisabled={isDisabled}
+      />
 
-			{/* Información Básica */}
-			<BasicInformationSection
-				formData={formData}
-				errors={errors}
-				updateField={updateField}
-				isDisabled={isDisabled}
-			/>
+      <Divider />
 
-			<Divider />
+      {/* Pricing and Stock */}
+      <PricingAndStockSection
+        formData={formData}
+        errors={errors}
+        updateField={updateField}
+        isDisabled={isDisabled}
+      />
 
-			{/* Información Financiera y Stock */}
-			<PricingAndStockSection
-				formData={formData}
-				errors={errors}
-				updateField={updateField}
-				isDisabled={isDisabled}
-			/>
-
-			{/* Form Actions */}
-			<FormActions
-				onCancel={handleCancel}
-				isLoading={isLoading}
-				submitting={submitting}
-				isPending={isPending}
-				isFormValid={isFormValid}
-			/>
-		</form>
-	);
+      {/* Form Actions */}
+      <FormActions
+        onCancel={handleCancel}
+        isLoading={isLoading}
+        submitting={isSubmitting}
+        isPending={false}
+        isFormValid={isFormValid}
+      />
+    </form>
+  );
 }

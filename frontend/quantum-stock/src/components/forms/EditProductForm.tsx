@@ -1,21 +1,20 @@
 'use client';
 
-import type { StockItem } from '@/components/tables/StockTable';
-import { updateProduct } from '@/lib/actions/product.action';
-import { PRODUCT_CATEGORIES } from '@/lib/constants/categories.constants';
-import { formatCategory } from '@/lib/utils/category.utils';
+import type Product from '@/lib/model/product.model';
+import { useUpdateProduct } from '@/lib/hooks/useUpdateProduct';
 import {
 	Button,
 	Divider,
 	Input,
-	Select,
-	SelectItem,
+	Autocomplete,
+	AutocompleteItem,
 	Textarea,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useKeycloak } from '@react-keycloak/web';
-import { useEffect, useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import { useEffect, useState } from 'react';
+import { Category, getCategoriesWithoutAll, isValidCategory } from '@/components/types/categories';
+import type { Key } from 'react';
 
 export type EditProductData = {
 	id: string;
@@ -28,18 +27,10 @@ export type EditProductData = {
 };
 
 type EditProductFormProps = {
-	product: StockItem;
+	product: Product;
 	onSave?: (product: EditProductData) => Promise<void>;
 	onCancel: () => void;
 	isLoading?: boolean;
-};
-
-const initialState: {
-	success?: boolean;
-	product?: any;
-	errors?: { updateProduct?: string };
-} = {
-	errors: {},
 };
 
 export default function EditProductForm({
@@ -48,15 +39,12 @@ export default function EditProductForm({
 	onCancel,
 	isLoading = false,
 }: Readonly<EditProductFormProps>) {
-	// Form state para server action
-	const [state, formAction] = useFormState(updateProduct, initialState);
-	const [isPending, startTransition] = useTransition();
+	const { keycloak } = useKeycloak();
+	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null);
 
-	const { keycloak: Keycloak } = useKeycloak();
-
-	const user = {
-		token: Keycloak?.token,
-	};
+	// Get categories without "ALL" option since we're editing a product
+	const categories = getCategoriesWithoutAll();
 
 	const [formData, setFormData] = useState<EditProductData>({
 		id: product.id,
@@ -73,7 +61,34 @@ export default function EditProductForm({
 	>({});
 
 	const [isFormValid, setIsFormValid] = useState<boolean>(true);
-	const [submitting, setSubmitting] = useState(false);
+
+	// Use the update hook
+	const { updateProductById, isUpdating } = useUpdateProduct({
+		token: keycloak?.token ?? '',
+		onSuccess: async (updatedProduct) => {
+			setSuccess('Producto actualizado exitosamente');
+			setError(null);
+			
+			// Convert Product to EditProductData for the callback
+			const editProductData: EditProductData = {
+				id: updatedProduct.id,
+				name: updatedProduct.name,
+				description: updatedProduct.description,
+				category: updatedProduct.category,
+				price: updatedProduct.price,
+				quantity: updatedProduct.quantity,
+				minQuantity: updatedProduct.minQuantity,
+			};
+			
+			if (onSave) {
+				await onSave(editProductData);
+			}
+		},
+		onError: (err) => {
+			setError(err.message);
+			setSuccess(null);
+		},
+	});
 
 	// Función para validar el formulario
 	const validateForm = (): boolean => {
@@ -87,7 +102,7 @@ export default function EditProductForm({
 			newErrors.description = 'La descripción es requerida';
 		}
 
-		if (!formData.category) {
+		if (!formData.category || !isValidCategory(formData.category)) {
 			newErrors.category = 'La categoría es requerida';
 		}
 
@@ -116,7 +131,7 @@ export default function EditProductForm({
 	const validateFormSilent = (): boolean => {
 		if (!formData.name.trim()) return false;
 		if (!formData.description.trim()) return false;
-		if (!formData.category) return false;
+		if (!formData.category || !isValidCategory(formData.category)) return false;
 		if (formData.price <= 0) return false;
 		if (formData.quantity < 0) return false;
 		if (formData.minQuantity < 0) return false;
@@ -124,69 +139,56 @@ export default function EditProductForm({
 		return true;
 	};
 
-	const handleServerAction = async (
-		event: React.FormEvent<HTMLFormElement>,
-	) => {
-		event.preventDefault();
-
-		// Validación completa al intentar enviar (muestra errores)
-		if (!validateForm()) return;
-
-		const userToken = user?.token;
-
-		if (!userToken) {
-			setErrors((prev) => ({
-				...prev,
-				form: 'Token de autenticación no encontrado',
-			}));
-			return;
-		}
-
-		setSubmitting(true);
-
-		try {
-			const formDataObj = new FormData();
-			formDataObj.append('id', formData.id);
-			formDataObj.append('name', formData.name);
-			formDataObj.append('description', formData.description);
-			formDataObj.append('category', formData.category);
-			formDataObj.append('price', formData.price.toString());
-			formDataObj.append('quantity', formData.quantity.toString());
-			formDataObj.append('minQuantity', formData.minQuantity.toString());
-
-			startTransition(() => {
-				formAction({ formData: formDataObj, token: userToken });
-			});
-
-			// Verificar si hay errores después de la actualización
-			if (!state?.errors?.updateProduct) {
-				// Si no hay errores, notificar al componente padre con los datos actualizados
-				if (onSave) {
-					await onSave(formData);
-				}
-			}
-		} catch (error) {
-			setErrors((prev) => ({
-				...prev,
-				form:
-					error instanceof Error
-						? error.message
-						: 'Error al actualizar el producto',
-			}));
-		} finally {
-			setSubmitting(false);
-		}
+	const handleCategoryChange = (key: Key | null) => {
+	const selectedCategory = key?.toString() ?? '';
+	
+	// Validate that the selected category is valid
+	if (selectedCategory && isValidCategory(selectedCategory)) {
+		updateField('category', selectedCategory);
+	} else {
+		updateField('category', '');
+	}
 	};
 
-	useEffect(() => {
-		// Si la acción del servidor fue exitosa y no estamos en estado de carga
-		if (state?.success && !isPending && !submitting) {
-			// Llamar a onSave para realizar el refetch
-			if (onSave) {
-				onSave(formData).catch(console.error);
+	// Ensure the selected category is valid for the Autocomplete
+	const selectedCategoryKey = formData.category && isValidCategory(formData.category) 
+	? formData.category
+	: null;
+
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		// Clear previous messages
+		setError(null);
+		setSuccess(null);
+
+		// Validate form
+		if (!validateForm()) return;
+
+		// Check token
+		if (keycloak.isTokenExpired()) {
+			try {
+				await keycloak.updateToken(30);
+			} catch (tokenError) {
+				console.error('Error al renovar token:', tokenError);
+				setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+				return;
 			}
 		}
-	}, [state?.success, isPending, submitting]);
+
+		// Convert EditProductData to Product format
+		const productToUpdate: Product = {
+			id: formData.id,
+			name: formData.name,
+			description: formData.description,
+			category: formData.category,
+			price: formData.price,
+			quantity: formData.quantity,
+			minQuantity: formData.minQuantity,
+		};
+
+		await updateProductById(productToUpdate);
+	};
 
 	const updateField = (
 		field: keyof EditProductData,
@@ -202,19 +204,19 @@ export default function EditProductForm({
 		onCancel();
 	};
 
-	// Mostrar errores del server
-	const serverError = state?.errors?.updateProduct;
-
 	return (
-		<form onSubmit={handleServerAction} className="space-y-6">
-			{serverError && (
+		<form onSubmit={handleSubmit} className="space-y-6">
+			{error && (
 				<div className="p-3 mb-4 text-white bg-red-500 rounded-md">
-					{serverError}
+					{error}
 				</div>
 			)}
 
-			{/* Campo oculto para el ID */}
-			<input type="hidden" name="id" value={formData.id} />
+			{success && (
+				<div className="p-3 mb-4 text-white bg-green-500 rounded-md">
+					{success}
+				</div>
+			)}
 
 			{/* Información Básica */}
 			<div className="space-y-4">
@@ -234,7 +236,7 @@ export default function EditProductForm({
 					startContent={<Icon icon="lucide:tag" className="text-default-400" />}
 					variant="bordered"
 					isRequired
-					isDisabled={isLoading || submitting}
+					isDisabled={isLoading || isUpdating}
 				/>
 
 				<Textarea
@@ -248,34 +250,33 @@ export default function EditProductForm({
 					variant="bordered"
 					minRows={3}
 					isRequired
-					isDisabled={isLoading || submitting}
+					isDisabled={isLoading || isUpdating}
 				/>
 
-				<Select
+				<Autocomplete
 					name="category"
 					label="Categoría"
 					placeholder="Selecciona una categoría"
-					selectedKeys={formData.category ? [formData.category] : []}
-					onSelectionChange={(keys) => {
-						const selectedCategory = Array.from(keys)[0] as string;
-						updateField('category', selectedCategory);
-					}}
+					defaultItems={categories}
+					selectedKey={selectedCategoryKey}
+					onSelectionChange={handleCategoryChange}
 					isInvalid={!!errors.category}
 					errorMessage={errors.category}
 					variant="bordered"
-					radius="full"
 					startContent={
 						<Icon icon="lucide:folder" className="text-default-400" />
 					}
 					isRequired
-					isDisabled={isLoading || submitting}
+					isDisabled={isLoading || isUpdating}
+					allowsCustomValue={false}
+					aria-label="Selecciona categoría del producto"
 				>
-					{PRODUCT_CATEGORIES.map((category) => (
-						<SelectItem key={category} value={category}>
-							{formatCategory(category)}
-						</SelectItem>
-					))}
-				</Select>
+					{(category) => (
+						<AutocompleteItem key={category.value} textValue={category.label}>
+							{category.label}
+						</AutocompleteItem>
+					)}
+				</Autocomplete>
 			</div>
 
 			<Divider />
@@ -306,7 +307,7 @@ export default function EditProductForm({
 						}
 						variant="bordered"
 						isRequired
-						isDisabled={isLoading || submitting}
+						isDisabled={isLoading || isUpdating}
 					/>
 
 					<Input
@@ -325,7 +326,7 @@ export default function EditProductForm({
 						}
 						variant="bordered"
 						isRequired
-						isDisabled={isLoading || submitting}
+						isDisabled={isLoading || isUpdating}
 					/>
 				</div>
 
@@ -346,7 +347,7 @@ export default function EditProductForm({
 					variant="bordered"
 					description="Cantidad mínima antes de mostrar alerta de stock bajo"
 					isRequired
-					isDisabled={isLoading || submitting}
+					isDisabled={isLoading || isUpdating}
 				/>
 			</div>
 
@@ -356,7 +357,7 @@ export default function EditProductForm({
 					color="danger"
 					variant="flat"
 					onPress={handleCancel}
-					disabled={isLoading || submitting || isPending}
+					disabled={isLoading || isUpdating}
 					type="button"
 				>
 					Cancelar
@@ -364,15 +365,15 @@ export default function EditProductForm({
 				<Button
 					color="primary"
 					type="submit"
-					isLoading={isLoading || submitting || isPending}
-					isDisabled={!isFormValid || isLoading || submitting || isPending}
+					isLoading={isLoading || isUpdating}
+					isDisabled={!isFormValid || isLoading || isUpdating}
 					startContent={
-						!isLoading && !submitting && !isPending ? (
+						!isLoading && !isUpdating ? (
 							<Icon icon="lucide:save" />
 						) : null
 					}
 				>
-					{isLoading || submitting || isPending
+					{isLoading || isUpdating
 						? 'Guardando...'
 						: 'Actualizar Producto'}
 				</Button>
