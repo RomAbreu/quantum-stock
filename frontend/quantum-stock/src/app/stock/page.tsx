@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import BreadcrumbsBuilder, {
   type BreadCrumbNavigationItem,
 } from '@/components/breadcrumbsBuilder/BreadCrumbsBuilder';
@@ -13,6 +14,7 @@ import ControlPanel from '@/components/stock/ControlPanel';
 import FloatingActionButton from '@/components/stock/FloatingActionButton';
 import ProductCardsView from '@/components/stock/ProductCardsView';
 import StockHeader from '@/components/stock/StockHeader';
+import Pagination from '@/components/stock/Pagination'; // Importar el componente nuevo
 import {
   EmptyStateView,
   ErrorView,
@@ -28,11 +30,27 @@ const breadcrumbItems: BreadCrumbNavigationItem[] = [
 
 export default function StockPage() {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
-  // Basic search state (temporary until you implement your solution)
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  
+  const currentQuery = searchParams.get('query') ?? '';
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const filterCategory = searchParams.get('category') ?? 'all';
+  const minPrice = searchParams.get('minPrice') ?? '';
+  const maxPrice = searchParams.get('maxPrice') ?? '';
+
+  // Tamaño de página consistente
+  const PAGE_SIZE = 2;
+
+  const [searchKey, setSearchKey] = useState(0);
+
+  useEffect(() => {
+    setSearchKey(prev => prev + 1);
+  }, [currentQuery, currentPage, filterCategory, minPrice, maxPrice]);
 
   const {
     products,
+    totalElements,
+    totalPages,
     error,
     isLoading,
     isValidating,
@@ -49,23 +67,51 @@ export default function StockPage() {
     handleUpdateProduct,
     handleDeleteProductConfirm,
     selectedProduct,
-    refreshProducts, // ← Usar la función de refresh del hook
-  } = useStockPage();
+    refreshProducts,
+  } = useStockPage({
+    query: currentQuery,
+    page: currentPage,
+    category: filterCategory !== 'all' ? filterCategory : undefined,
+    minPrice: minPrice || undefined,
+    maxPrice: maxPrice || undefined,
+    size: PAGE_SIZE, // Usar constante
+  });
 
   const handleSaveProduct = async (newProduct: Product) => {
     console.log('Product saved successfully:', newProduct);
-    // Trigger refetch after saving new product
     refreshProducts();
   };
 
-  // Simple refresh function - will be expanded later
   const handleRefresh = () => {
     refreshProducts();
+  };
+
+  const handleCategoryChange = (category: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1'); // Reset to page 1
+    
+    if (category && category !== 'all') {
+      params.set('category', category);
+    } else {
+      params.delete('category');
+    }
+    
+    window.history.pushState({}, '', `?${params.toString()}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', page.toString());
+    window.history.pushState({}, '', `?${params.toString()}`);
   };
 
   if (isAuthChecking) {
     return <LoadingView message="Verificando autenticación..." />;
   }
+
+  const categories = Array.isArray(products) 
+    ? [...new Set(products.map(p => p.category).filter(Boolean))]
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-content1">
@@ -84,16 +130,14 @@ export default function StockPage() {
         </div>
 
         <ControlPanel
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterCategory={'all'}
-          setFilterCategory={() => {}}
-          categories={[]}
+          filterCategory={filterCategory}
+          setFilterCategory={handleCategoryChange}
+          categories={categories}
           viewMode={viewMode}
           setViewMode={setViewMode}
           onRefresh={handleRefresh}
           isLoading={isLoading || isValidating}
-          filteredItemsCount={Array.isArray(products) ? products.length : 0}
+          filteredItemsCount={totalElements}
         />
 
         {error && <ErrorView error={error.message ?? 'Error al cargar los productos'} />}
@@ -103,19 +147,31 @@ export default function StockPage() {
         ) : (
           <div className="animate-fade-in-up animation-delay-400">
             {Array.isArray(products) && products.length > 0 ? (
-              viewMode === 'table' ? (
-                <StockTable
-                  stockItems={products}
-                  onEdit={(product) => handleEditProduct(product)}
-                  onDelete={(product) => handleDeleteProduct(product)}
+              <>
+                {viewMode === 'table' ? (
+                  <StockTable
+                    stockItems={products}
+                    onEdit={(product) => handleEditProduct(product)}
+                    onDelete={(product) => handleDeleteProduct(product)}
+                  />
+                ) : (
+                  <ProductCardsView
+                    items={products}
+                    onEdit={(_, item) => handleEditProduct(item)}
+                    onDelete={(id) => handleDeleteProduct({ id } as any)}
+                  />
+                )}
+                
+                {/* Componente de paginación */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  isLoading={isLoading || isValidating}
+                  totalElements={totalElements}
+                  pageSize={PAGE_SIZE}
                 />
-              ) : (
-                <ProductCardsView
-                  items={products}
-                  onEdit={(_, item) => handleEditProduct(item)}
-                  onDelete={(id) => handleDeleteProduct({ id } as any)}
-                />
-              )
+              </>
             ) : (
               <EmptyStateView onAddProduct={onAddOpen} />
             )}
@@ -125,7 +181,6 @@ export default function StockPage() {
 
       <FloatingActionButton onPress={onAddOpen} isDisabled={isLoading} />
 
-      {/* Modals centralizados */}
       <AddProductModal
         isOpen={isAddOpen}
         onClose={onAddClose}
