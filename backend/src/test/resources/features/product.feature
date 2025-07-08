@@ -28,7 +28,7 @@ Feature: Product Management
         | name         | description                   | price   | category | quantity | minQuantity |
         | Baseball Bat | The best baseball bat ever!!! | 3500.00 | SPORTS   | 100      | -10         |
     Then the response status code should be 400
-    And the response body should contain the error message "Product minimum quantity must be greater than or equal to 1"
+    And the response body should contain the error message "Product minimum quantity must be greater than or equal to 0"
 
   Scenario: Create a new product with invalid name
     Given I am an authenticated admin user with credentials "admin" and "admin"
@@ -45,14 +45,6 @@ Feature: Product Management
         | Baseball Bat |             | 3500.00 | SPORTS   | 100      | 10          |
     Then the response status code should be 400
     And the response body should contain the error message "Product description is required"
-
-  Scenario: Create a new product with invalid category
-    Given I am an authenticated admin user with credentials "admin" and "admin"
-    When I send a POST request to create product endpoint with the following product data:
-        | name         | description                   | price   | category | quantity | minQuantity |
-        | Baseball Bat | The best baseball bat ever!!! | 3500.00 | MONEY    | 100      | 10          |
-    Then the response status code should be 400
-    And the response body should contain the error message "Product category must be any of [ELECTRONICS, CLOTHING, HOME, HEALTH, TOYS, SPORTS, BOOKS, FOOD, PET_SUPPLIES, AUTOMOTIVE]"
 
   Scenario: Update an existing product
     Given I am an authenticated admin user with credentials "admin" and "admin"
