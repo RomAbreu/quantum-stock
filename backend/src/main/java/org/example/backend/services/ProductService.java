@@ -3,14 +3,10 @@ package org.example.backend.services;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.repositories.ProductRepository;
-import org.example.backend.specifications.ProductSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.example.backend.specifications.ProductSpecifications.buildSpecification;
 
