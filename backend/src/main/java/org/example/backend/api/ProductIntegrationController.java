@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.services.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,11 +17,11 @@ import java.util.List;
 @RequestMapping("integration-api/v1/products")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('role_admin')")
-public class ProductController {
+public class ProductIntegrationController {
     private final ProductService productService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
+    public ResponseEntity<Page<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(filters, pageable));
     }
 
