@@ -4,6 +4,7 @@ import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.repositories.ProductRepository;
 import org.example.backend.specifications.ProductSpecifications;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,9 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProducts(ProductFilter filters, Pageable pageable) {
+    public Page<Product> getAllProducts(ProductFilter filters, Pageable pageable) {
         Specification<Product> spec = buildSpecification(filters);
-        return productRepository.findAll(spec, pageable).getContent();
+        return productRepository.findAll(spec, pageable);
     }
 
     private Specification<Product> buildSpecification(ProductFilter filters) {
