@@ -77,7 +77,6 @@ export default function ControlPanel({
                             <FilterByCategory 
                                 defaultValue={filterCategory}
                                 onChange={setFilterCategory}
-                                categories={categories}
                             />
                             <FilterByMinPrice 
                                 label="Precio Mínimo"

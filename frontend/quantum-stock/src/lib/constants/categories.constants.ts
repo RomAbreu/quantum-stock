@@ -59,7 +59,7 @@ export const getCategoryLabel = (category: ProductCategory | 'ALL'): string => {
 // Funciones de compatibilidad (mantienen la API anterior)
 export const getCategoryKey = (displayName: string): string => {
   const entries = Object.entries(ProductCategory);
-  const found = entries.find([_, value]) => value === displayName);
+  const found = entries.find(([_, value]) => value === displayName);
   return found ? found[0] : displayName;
 };
 

@@ -85,12 +85,10 @@ export function useStockPage(params?: UseStockPageParams) {
                     return;
                 }
 
-                const hasAdminRole = 
-                    keycloak.resourceAccess?.['quantum-stock-frontend']?.roles?.includes(
-                        'admin',
-                    );
+                const roles = keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
+                const hasRequiredRole = roles.includes('admin') || roles.includes('employee');
 
-                if (!hasAdminRole) {
+                if (!hasRequiredRole) {
                     router.push(EndpointEnum.Home);
                     return;
                 }

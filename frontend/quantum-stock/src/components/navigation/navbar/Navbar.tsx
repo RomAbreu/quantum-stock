@@ -18,7 +18,7 @@ import {
 	NavbarProps,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { EndpointEnum } from '@lib/constants/routes.constants';
 import { navbarItems } from '@lib/constants/navbar.constants';
@@ -27,10 +27,25 @@ export default function Navbar(props: Readonly<NavbarProps>) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { keycloak } = useKeycloak();
 
-    const isAuthenticated = keycloak.authenticated;
+    const isAuthenticated = useMemo(() => {
+        return keycloak.authenticated;
+    }, [keycloak.authenticated]);
+
+    const hasPermission = useMemo(() => {
+        const roles = keycloak.resourceAccess?.['quantum-stock-frontend']?.roles;
+        if (!roles) return false;
+
+        return (
+            roles.includes('admin') ||
+            roles.includes('employee')
+        );
+    }, [keycloak.resourceAccess]);
+
     const user = {
         username: keycloak.tokenParsed?.preferred_username ?? 'Usuario',
     };
+
+
 
     return (
         <HeroNavbar
@@ -65,7 +80,7 @@ export default function Navbar(props: Readonly<NavbarProps>) {
             </NavbarContent>
 
             <NavbarContent className="hidden sm:flex" justify="center">
-                {isAuthenticated && (
+                {isAuthenticated && hasPermission && (
                     <>
                         {navbarItems.map((item) => (
                             <NavbarItem key={item.label}>
@@ -154,19 +169,21 @@ export default function Navbar(props: Readonly<NavbarProps>) {
                             </span>
                           </DropdownItem>
                 
-                          <DropdownItem
-                            key="settings"
-                            startContent={
-                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
-                                <Icon
-                                  icon="solar:users-group-rounded-bold"
-                                  className="text-sm text-indigo-400"
-                                />
-                              </div>
-                            }
-                          >
-                            <span className="text-white">Gestión de usuarios</span>
-                          </DropdownItem>
+                          {hasPermission ? (
+                            <DropdownItem
+                              key="settings"
+                              startContent={
+                                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
+                                  <Icon
+                                    icon="solar:users-group-rounded-bold"
+                                    className="text-sm text-indigo-400"
+                                  />
+                                </div>
+                              }
+                            >
+                              <span className="text-white">Gestión de usuarios</span>
+                            </DropdownItem>
+                          ) : null}
                 
                           <DropdownItem key="divider" className="p-0 my-1">
                             <div className="w-full h-px bg-gray-700/50" />

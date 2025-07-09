@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import BreadcrumbsBuilder, {
   type BreadCrumbNavigationItem,
@@ -14,7 +14,7 @@ import ControlPanel from '@/components/stock/ControlPanel';
 import FloatingActionButton from '@/components/stock/FloatingActionButton';
 import ProductCardsView from '@/components/stock/ProductCardsView';
 import StockHeader from '@/components/stock/StockHeader';
-import Pagination from '@/components/stock/Pagination'; // Importar el componente nuevo
+import Pagination from '@/components/stock/Pagination';
 import {
   EmptyStateView,
   ErrorView,
@@ -28,7 +28,8 @@ const breadcrumbItems: BreadCrumbNavigationItem[] = [
   { name: 'Inventario', href: '/stock' },
 ];
 
-export default function StockPage() {
+// Create a client component that uses useSearchParams
+function StockPageContent() {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const searchParams = useSearchParams();
   
@@ -216,5 +217,14 @@ export default function StockPage() {
         />
       )}
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function StockPage() {
+  return (
+    <Suspense fallback={<LoadingView message="Cargando página de stock..." />}>
+      <StockPageContent />
+    </Suspense>
   );
 }
