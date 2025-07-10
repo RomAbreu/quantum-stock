@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("integration-api/v1/products")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('role_admin')")
-public class ProductController {
+public class ProductIntegrationController {
     private final ProductService productService;
 
     @GetMapping("/all")

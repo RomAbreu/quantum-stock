@@ -1,9 +1,13 @@
 'use client';
-
 import { Input, Autocomplete, AutocompleteItem, Textarea } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { Category, getCategoriesWithoutAll, isValidCategory } from '@components/types/categories';
-import type { NewProductData } from '@components/forms/types/product.types';
+import { NewProductData } from '@components/forms/types/product.types'
+import { 
+  getCategoriesWithoutAll, 
+  isValidCategory 
+} 
+
+from '@/lib/constants/categories.constants';
 import type { Key } from 'react';
 
 type BasicInformationSectionProps = {
@@ -24,7 +28,7 @@ export default function BasicInformationSection({
 
   const handleCategoryChange = (key: Key | null) => {
     const selectedCategory = key?.toString() ?? '';
-    
+   
     // Validate that the selected category is valid
     if (selectedCategory && isValidCategory(selectedCategory)) {
       updateField('category', selectedCategory);
@@ -34,7 +38,7 @@ export default function BasicInformationSection({
   };
 
   // Ensure the selected category is valid for the Autocomplete
-  const selectedCategoryKey = formData.category && isValidCategory(formData.category) 
+  const selectedCategoryKey = formData.category && isValidCategory(formData.category)
     ? formData.category
     : null;
 

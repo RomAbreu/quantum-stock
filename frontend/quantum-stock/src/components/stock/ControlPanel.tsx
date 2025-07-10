@@ -12,11 +12,8 @@ import {
     Input,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useEffect } from 'react';
 
 type ControlPanelProps = {
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
     filterCategory: string;
     setFilterCategory: (category: string) => void;
     categories: string[];
@@ -28,55 +25,58 @@ type ControlPanelProps = {
 };
 
 export default function ControlPanel({
-    searchTerm,
-    setSearchTerm,
     filterCategory,
     setFilterCategory,
-    categories,
     viewMode,
     setViewMode,
     onRefresh,
+    categories,
     isLoading,
     filteredItemsCount,
 }: Readonly<ControlPanelProps>) {
-    // Use the search hook
-    const { inputValue, handleInputChange, clearSearch, currentQuery } = useSearchQuery();
-    
-    // Sync the hook's query with the parent component's searchTerm
-    useEffect(() => {
-        if (currentQuery !== searchTerm) {
-            setSearchTerm(currentQuery);
-        }
-    }, [currentQuery, setSearchTerm, searchTerm]);
+    const { inputValue, handleInputChange, clearSearch, currentQuery } = useSearchQuery({
+        minLength: 1,
+        debounceTime: 500,
+    });
 
     return (
         <Card className="mb-6 shadow-lg animate-fade-in-up animation-delay-300">
             <CardBody className="p-6">
                 <div className="flex flex-col gap-4">
-                    {/* Search Bar */}
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                         <Input
                             className="w-full"
                             placeholder="Buscar por nombre o descripción..."
                             startContent={
                                 <Icon icon="lucide:search" className="text-default-400" />
                             }
+                            type="text"
                             value={inputValue}
                             onValueChange={handleInputChange}
                             variant="bordered"
                             isDisabled={isLoading}
                             size="sm"
-                            clearable
+                            isClearable
                             onClear={clearSearch}
                         />
+                        {(inputValue || currentQuery) && (
+                            <Chip 
+                                className="ml-2" 
+                                variant="flat" 
+                                color="primary" 
+                                size="sm"
+                                onClose={clearSearch}
+                            >
+                                Buscando: {inputValue || currentQuery}
+                            </Chip>
+                        )}
                     </div>
                     
-                    {/* Filters Row */}
                     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                         <div className="flex flex-wrap gap-3">
                             <FilterByCategory 
-                                categories={categories} 
                                 defaultValue={filterCategory}
+                                onChange={setFilterCategory}
                             />
                             <FilterByMinPrice 
                                 label="Precio Mínimo"
@@ -88,10 +88,9 @@ export default function ControlPanel({
                             />
                         </div>
 
-                        {/* View Mode Toggle and Refresh Button */}
                         <div className="flex items-center gap-2 mt-3 md:mt-0">
-                            <Chip variant="flat" size="sm">
-                                {filteredItemsCount} resultados
+                            <Chip variant="flat" size="sm" color="secondary">
+                                {filteredItemsCount} resultado{filteredItemsCount !== 1 ? 's' : ''}
                             </Chip>
                             <Button
                                 isIconOnly
@@ -99,6 +98,7 @@ export default function ControlPanel({
                                 variant="light"
                                 onPress={onRefresh}
                                 isLoading={isLoading}
+                                title="Actualizar"
                             >
                                 <Icon icon="lucide:refresh-cw" />
                             </Button>
@@ -109,6 +109,7 @@ export default function ControlPanel({
                                     variant={viewMode === 'table' ? 'solid' : 'light'}
                                     color={viewMode === 'table' ? 'primary' : 'default'}
                                     onPress={() => setViewMode('table')}
+                                    title="Vista de tabla"
                                 >
                                     <Icon icon="lucide:table" />
                                 </Button>
@@ -118,6 +119,7 @@ export default function ControlPanel({
                                     variant={viewMode === 'cards' ? 'solid' : 'light'}
                                     color={viewMode === 'cards' ? 'primary' : 'default'}
                                     onPress={() => setViewMode('cards')}
+                                    title="Vista de tarjetas"
                                 >
                                     <Icon icon="lucide:grid-3x3" />
                                 </Button>

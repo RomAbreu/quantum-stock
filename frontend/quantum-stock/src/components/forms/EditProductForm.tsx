@@ -13,7 +13,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect, useState } from 'react';
-import { Category, getCategoriesWithoutAll, isValidCategory } from '@/components/types/categories';
+import { getCategoriesWithoutAll, isValidCategory } from '@/lib/constants/categories.constants';
 import type { Key } from 'react';
 
 export type EditProductData = {
@@ -140,20 +140,20 @@ export default function EditProductForm({
 	};
 
 	const handleCategoryChange = (key: Key | null) => {
-	const selectedCategory = key?.toString() ?? '';
-	
-	// Validate that the selected category is valid
-	if (selectedCategory && isValidCategory(selectedCategory)) {
-		updateField('category', selectedCategory);
-	} else {
-		updateField('category', '');
-	}
+		const selectedCategory = key?.toString() ?? '';
+		
+		// Validate that the selected category is valid
+		if (selectedCategory && isValidCategory(selectedCategory)) {
+			updateField('category', selectedCategory);
+		} else {
+			updateField('category', '');
+		}
 	};
 
 	// Ensure the selected category is valid for the Autocomplete
 	const selectedCategoryKey = formData.category && isValidCategory(formData.category) 
-	? formData.category
-	: null;
+		? formData.category
+		: null;
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();

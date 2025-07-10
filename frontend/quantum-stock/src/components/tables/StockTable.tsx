@@ -1,6 +1,6 @@
 'use client';
 
-import { getCategoryLabel, isValidCategory } from '@/components/types/categories';
+import { getCategoryLabel, isValidCategory } from '@/lib/constants/categories.constants';
 import {
   Button,
   Chip,
@@ -17,7 +17,6 @@ import type React from 'react';
 import { useCallback } from 'react';
 import type Product from '@/lib/model/product.model';
 
-// Columnas de la tabla
 export const stockColumns = [
   { name: 'Nombre', uid: 'name' },
   { name: 'Descripción', uid: 'description' },

@@ -1,12 +1,12 @@
 'use client';
 
-import type { StockItem } from '@/components/tables/StockTable';
+import type Product from '@/lib/model/product.model';
 import { Button, Card, CardBody, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
 type ProductCardsViewProps = {
-	items: StockItem[];
-	onEdit: (id: string, item: StockItem) => void;
+	items: Product[];
+	onEdit: (id: string, item: Product) => void;
 	onDelete: (id: string) => void;
 };
 

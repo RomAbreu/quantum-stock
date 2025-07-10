@@ -8,6 +8,9 @@ import useSWRMutation from 'swr/mutation';
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
+// Extended error type that includes a general form error
+type FormErrors = Partial<Record<keyof NewProductData, string>> & { form?: string };
+
 type UseProductFormProps = {
   mode?: 'create' | 'edit';
   initialProduct?: Product;
@@ -37,7 +40,8 @@ export default function useProductForm({
     minQuantity: initialProduct?.minQuantity ?? 0,
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof NewProductData, string>>>({});
+  // Updated error state to use the extended FormErrors type
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
 
   // SWR mutations
@@ -85,7 +89,7 @@ export default function useProductForm({
 
   // Validation with error messages
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof NewProductData, string>> = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre es requerido';
@@ -176,7 +180,7 @@ export default function useProductForm({
       }
 
       resetForm();
-      return result;
+      return result || null;
     } catch (error) {
       console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} product:`, error);
       

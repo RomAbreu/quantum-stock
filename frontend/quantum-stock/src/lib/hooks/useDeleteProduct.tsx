@@ -26,29 +26,60 @@ export function useDeleteProduct({
         productId: arg,
         headers: { 
           Authorization: `Bearer ${token}`, // ← Agregado "Bearer " prefix
-          'Content-Type': 'application/json'
         }
       });
     }
   );
 
-  const deleteProductById = async (productId: string): Promise<boolean> => {
-    // Validar token antes de continuar
+  const handleError = (message: string): false => {
+    if (onError) onError(new Error(message));
+    return false;
+  };
+  
+  const validateDeleteRequest = (productId: string): boolean => {
     if (!token || token.trim() === '') {
-      const error = new Error('Token de autenticación requerido');
-      if (onError) onError(error);
+      handleError('Token de autenticación requerido');
       return false;
     }
 
     if (!isAdmin) {
-      const error = new Error('No tienes permisos para eliminar productos');
-      if (onError) onError(error);
+      handleError('No tienes permisos para eliminar productos');
       return false;
     }
 
     if (!productId) {
-      const error = new Error('Se requiere un ID de producto para eliminarlo');
-      if (onError) onError(error);
+      handleError('Se requiere un ID de producto para eliminarlo');
+      return false;
+    }
+    
+    return true;
+  };
+  
+  const processDeleteError = (error: unknown): false => {
+    console.error('Error al eliminar producto:', error);
+    
+    if (error instanceof Error) {
+      let errorMessage = error.message;
+      
+      // Mapear códigos de error HTTP a mensajes amigables
+      if (error.message.includes('401')) {
+        errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+      } else if (error.message.includes('403')) {
+        errorMessage = 'No tienes permisos para realizar esta acción.';
+      } else if (error.message.includes('404')) {
+        errorMessage = 'El producto no existe o ya fue eliminado.';
+      } else if (error.message.includes('500')) {
+        errorMessage = 'Error interno del servidor. Inténtalo más tarde.';
+      }
+      
+      if (onError) onError(new Error(errorMessage));
+    }
+    
+    return false;
+  };
+
+  const deleteProductById = async (productId: string): Promise<boolean> => {
+    if (!validateDeleteRequest(productId)) {
       return false;
     }
 
@@ -56,36 +87,10 @@ export function useDeleteProduct({
 
     try {
       await deleteMutation.trigger(productId);
-
-      if (onSuccess) {
-        onSuccess(productId);
-      }
-
+      if (onSuccess) onSuccess(productId);
       return true;
     } catch (error) {
-      console.error('Error al eliminar producto:', error);
-
-      // Manejar errores específicos
-      if (error instanceof Error) {
-        let errorMessage = error.message;
-        
-        // Si el error contiene información de respuesta HTTP
-        if (error.message.includes('401')) {
-          errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
-        } else if (error.message.includes('403')) {
-          errorMessage = 'No tienes permisos para realizar esta acción.';
-        } else if (error.message.includes('404')) {
-          errorMessage = 'El producto no existe o ya fue eliminado.';
-        } else if (error.message.includes('500')) {
-          errorMessage = 'Error interno del servidor. Inténtalo más tarde.';
-        }
-        
-        if (onError) {
-          onError(new Error(errorMessage));
-        }
-      }
-
-      return false;
+      return processDeleteError(error);
     } finally {
       setIsDeleting(false);
     }
