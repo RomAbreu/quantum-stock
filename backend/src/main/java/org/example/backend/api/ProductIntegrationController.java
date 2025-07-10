@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.services.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

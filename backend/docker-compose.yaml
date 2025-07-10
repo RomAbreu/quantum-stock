@@ -22,6 +22,8 @@ services:
       - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
       - MYSQL_TCP_PORT=${TEST_MYSQL_PORT}
+    profiles:
+      - test
 
   keycloak-service:
     image: keycloak/keycloak:26.2
