@@ -21,7 +21,7 @@ public class ProductIntegrationController {
     private final ProductService productService;
 
     @GetMapping("/all")
-    public ResponseEntity<Page<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
+    public ResponseEntity<List<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(filters, pageable));
     }
 
