@@ -54,6 +54,8 @@ services:
     restart: always
     depends_on:
       - inventory-db-service
+    profiles:
+      - prod
 
   prometheus-service:
     image: prom/prometheus:latest
