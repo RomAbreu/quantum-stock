@@ -63,7 +63,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ProductResponse> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ProductResponse> delete(@PathVariable Long id) {
         Product deletedProduct = productService.delete(id);
 
         if (deletedProduct == null)

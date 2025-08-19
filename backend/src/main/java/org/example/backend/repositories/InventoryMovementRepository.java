@@ -2,7 +2,6 @@ package org.example.backend.repositories;
 
 import org.example.backend.models.InventoryMovement;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
