@@ -1,8 +1,10 @@
 package org.example.backend.services;
 
+import lombok.AllArgsConstructor;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.enums.InventoryMovementType;
 import org.example.backend.models.InventoryMovement;
+import org.example.backend.models.MinQuantityNotification;
 import org.example.backend.models.Product;
 import org.example.backend.repositories.ProductRepository;
 import org.springframework.data.domain.Page;
@@ -10,18 +12,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 import static org.example.backend.specifications.ProductSpecifications.buildSpecification;
 
 @Service
+@AllArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final InventoryMovementService inventoryMovementService;
-
-    public ProductService(ProductRepository productRepository,
-                          InventoryMovementService inventoryMovementService) {
-        this.productRepository = productRepository;
-        this.inventoryMovementService = inventoryMovementService;
-    }
+    private final MinQuantityNotificationService minQuantityNotificationService;
 
     public Page<Product> getAllProducts(ProductFilter filters, Pageable pageable) {
         Specification<Product> spec = buildSpecification(filters);
@@ -31,6 +31,7 @@ public class ProductService {
     public Product create(Product product, String user) {
         Product productCreated = productRepository.save(product);
         logInventoryMovement(productCreated, productCreated.getQuantity(), InventoryMovementType.IN, user);
+        handleMinQuantityNotification(productCreated);
         return productCreated;
     }
 
@@ -47,6 +48,8 @@ public class ProductService {
             InventoryMovementType type = quantityChange > 0 ? InventoryMovementType.IN : InventoryMovementType.OUT;
             logInventoryMovement(newProduct, newProduct.getQuantity(), type, user);
         }
+
+        handleMinQuantityNotification(newProduct);
 
         return newProduct;
     }
@@ -69,5 +72,18 @@ public class ProductService {
                 .user(user)
                 .build();
         inventoryMovementService.create(inventoryMovement);
+    }
+
+    private void handleMinQuantityNotification(Product product) {
+        if (product.getQuantity() < product.getMinQuantity()) {
+            MinQuantityNotification notification = MinQuantityNotification.builder()
+                    .id(product.getId())
+                    .product(product)
+                    .notificationDate(LocalDateTime.now())
+                    .build();
+            minQuantityNotificationService.saveNotification(notification);
+        } else {
+            minQuantityNotificationService.deleteNotificationByProductId(product.getId());
+        }
     }
 }
