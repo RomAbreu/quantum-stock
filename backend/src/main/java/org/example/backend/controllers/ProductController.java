@@ -7,10 +7,7 @@ import org.example.backend.dtos.PaginatedResponse;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.dtos.ProductRequest;
 import org.example.backend.dtos.ProductResponse;
-import org.example.backend.enums.InventoryMovementType;
-import org.example.backend.models.InventoryMovement;
 import org.example.backend.models.Product;
-import org.example.backend.services.InventoryMovementService;
 import org.example.backend.services.ProductService;
 import org.example.backend.util.Utils;
 import org.springframework.data.domain.Page;
@@ -28,7 +25,6 @@ import java.util.List;
 public class ProductController {
     private final ObjectMapper objectMapper;
     private final ProductService productService;
-    private final InventoryMovementService inventoryMovementService;
 
     @GetMapping("/all")
     public ResponseEntity<PaginatedResponse<ProductResponse>> getAllProducts(ProductFilter filters, Pageable pageable) {
