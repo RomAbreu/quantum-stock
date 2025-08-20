@@ -40,7 +40,7 @@ function StockPageContent() {
   const maxPrice = searchParams.get('maxPrice') ?? '';
 
   // Tamaño de página consistente
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 10;
 
   const [searchKey, setSearchKey] = useState(0);
 

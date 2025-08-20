@@ -116,9 +116,6 @@ export function useStockPage(params?: UseStockPageParams) {
         const urlParams = new URLSearchParams();
         
         if (query?.trim()) {
-            // Cambia 'name' por el campo que uses en tu ProductFilter
-            // Si tu backend espera 'name', usa 'name'
-            // Si tu backend espera 'search', usa 'search'
             urlParams.append('name', query.trim());
         }
         
