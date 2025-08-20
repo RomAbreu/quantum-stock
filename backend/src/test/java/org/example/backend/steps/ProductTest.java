@@ -7,7 +7,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.example.backend.components.QuantumStockHttpClient;
+import org.example.backend.dtos.PaginatedResponse;
 import org.example.backend.dtos.ProductFilter;
+import org.example.backend.enums.Category;
 import org.example.backend.models.Product;
 import org.springframework.http.ResponseEntity;
 
@@ -73,7 +75,7 @@ public class ProductTest {
             product.setName(row.get(0));
             product.setDescription(row.get(1));
             product.setPrice(new BigDecimal(row.get(2)));
-            product.setCategory(row.get(3));
+            product.setCategory(Category.valueOf(row.get(3)));
             product.setQuantity(Integer.parseInt(row.get(4)));
             product.setMinQuantity(Integer.parseInt(row.get(5)));
             products.add(product);
@@ -89,7 +91,7 @@ public class ProductTest {
             product.setName(row.get(1));
             product.setDescription(row.get(2));
             product.setPrice(new BigDecimal(row.get(3)));
-            product.setCategory(row.get(4));
+            product.setCategory(Category.valueOf(row.get(4)));
             product.setQuantity(Integer.parseInt(row.get(5)));
             product.setMinQuantity(Integer.parseInt(row.get(6)));
             products.add(product);
@@ -107,7 +109,14 @@ public class ProductTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Product> productList = objectMapper.readValue(responseBody, objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
+            PaginatedResponse<Product> paginatedResponse = objectMapper.readValue(
+                    responseBody,
+                    objectMapper.getTypeFactory().constructParametricType(
+                            PaginatedResponse.class,
+                            Product.class
+                    )
+            );
+            List<Product> productList = paginatedResponse.getContent();
             assertThat(productList.size()).isEqualTo(expectedCount);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse response body", e);
@@ -133,7 +142,14 @@ public class ProductTest {
         List<String> productNames = dataTable.asList(String.class);
 
         try {
-            List<Product> products = objectMapper.readValue(responseBody, objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
+            PaginatedResponse<Product> paginatedResponse = objectMapper.readValue(
+                    responseBody,
+                    objectMapper.getTypeFactory().constructParametricType(
+                            PaginatedResponse.class,
+                            Product.class
+                    )
+            );
+            List<Product> products = paginatedResponse.getContent();
 
             productNames.forEach(expectedName -> {
                 boolean found = products.stream().anyMatch(product -> product.getName().equals(expectedName));
@@ -197,7 +213,15 @@ public class ProductTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Product> productList = objectMapper.readValue(responseBody, objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
+            PaginatedResponse<Product> paginatedResponse = objectMapper.readValue(
+                    responseBody,
+                    objectMapper.getTypeFactory().constructParametricType(
+                            PaginatedResponse.class,
+                            Product.class
+                    )
+            );
+
+            List<Product> productList = paginatedResponse.getContent();
             productList.forEach(product -> assertThat(product.getPrice()).isGreaterThanOrEqualTo(BigDecimal.valueOf(minPrice)));
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse response body", e);
@@ -210,8 +234,15 @@ public class ProductTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Product> productList = objectMapper.readValue(responseBody, objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
-            productList.forEach(product -> assertThat(product.getCategory()).isEqualTo(category));
+            PaginatedResponse<Product> paginatedResponse = objectMapper.readValue(
+                    responseBody,
+                    objectMapper.getTypeFactory().constructParametricType(
+                            PaginatedResponse.class,
+                            Product.class
+                    )
+            );
+            List<Product> productList = paginatedResponse.getContent();
+            productList.forEach(product -> assertThat(product.getCategory()).isEqualTo(Category.valueOf(category)));
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse response body", e);
         }

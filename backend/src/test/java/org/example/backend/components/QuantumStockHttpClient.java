@@ -10,6 +10,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.List;
+import java.util.Map;
 
 import static io.cucumber.spring.CucumberTestContext.SCOPE_CUCUMBER_GLUE;
 
@@ -18,7 +23,7 @@ import static io.cucumber.spring.CucumberTestContext.SCOPE_CUCUMBER_GLUE;
 public class QuantumStockHttpClient {
 
     private final static String SERVER_URL = "http://localhost:";
-    private final static String LOGIN_ENDPOINT = "/api/v1/auth/login";
+    private final static String LOGIN_ENDPOINT = "http://localhost:9090/realms/quantum-stock/protocol/openid-connect/token";
     private final static String CREATE_PRODUCT_ENDPOINT = "/api/v1/products/create";
     private final static String UPDATE_PRODUCT_ENDPOINT = "/api/v1/products/update";
     private final static String DELETE_PRODUCT_ENDPOINT = "/api/v1/products/delete";
@@ -44,9 +49,12 @@ public class QuantumStockHttpClient {
             String scope
     ) {}
 
-    private String getLoginUrl() {
-        return SERVER_URL + port + LOGIN_ENDPOINT;
-    }
+    private record KeycloakLoginRequest(
+            String client_id,
+            String username,
+            String password,
+            String grant_type
+    ) {}
 
     private String getCreateProductUrl() {
         return SERVER_URL + port + CREATE_PRODUCT_ENDPOINT;
@@ -65,8 +73,22 @@ public class QuantumStockHttpClient {
     }
 
     public String getAccessToken(String username, String password) {
-        LoginRequest body = new LoginRequest(username, password);
-        ResponseEntity<String> response = restTemplate.postForEntity(getLoginUrl(), body, String.class);
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "password");
+        body.add("username", username);
+        body.add("password", password);
+        body.add("client_id", "quantum-stock-backend");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                LOGIN_ENDPOINT,
+                request,
+                String.class
+        );
 
         if (response.getStatusCode().is2xxSuccessful()) {
             try {

@@ -11,7 +11,9 @@ import java.lang.annotation.*;
 @Documented
 @Constraint(validatedBy = CategoryValidator.class)
 public @interface ValidProductCategory {
-    Category[] anyOf();
+    Category[] anyOf() default {Category.BOOKS, Category.ELECTRONICS, Category.CLOTHING,Category.FOOD,
+                                Category.TOYS, Category.HOME, Category.HEALTH, Category.SPORTS,
+                                Category.PET_SUPPLIES, Category.AUTOMOTIVE};
     String message() default "Product category must be any of {anyOf}";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

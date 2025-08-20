@@ -5,12 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dtos.ProductFilter;
 import org.example.backend.models.Product;
 import org.example.backend.services.ProductService;
+import org.example.backend.util.Utils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("integration-api/v1/products")
@@ -20,18 +22,20 @@ public class ProductIntegrationController {
     private final ProductService productService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
+    public ResponseEntity<Page<Product>> getAllProducts(ProductFilter filters, Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(filters, pageable));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Product> create(@RequestBody @Valid Product product) {
-        return ResponseEntity.ok(productService.create(product));
+    public ResponseEntity<Product> create(@RequestBody @Valid Product product, @AuthenticationPrincipal Jwt jwt) {
+        String user = Utils.extractUsernameFromJwt(jwt);
+        return ResponseEntity.ok(productService.create(product, user));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody @Valid Product productDetails) {
-        Product updatedProduct = productService.update(id, productDetails);
+    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody @Valid Product productDetails, @AuthenticationPrincipal Jwt jwt) {
+        String user = Utils.extractUsernameFromJwt(jwt);
+        Product updatedProduct = productService.update(id, productDetails, user);
         if (updatedProduct != null) {
             return ResponseEntity.ok(updatedProduct);
         }
