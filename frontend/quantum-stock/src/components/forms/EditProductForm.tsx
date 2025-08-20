@@ -31,6 +31,7 @@ type EditProductFormProps = {
 	onSave?: (product: EditProductData) => Promise<void>;
 	onCancel: () => void;
 	isLoading?: boolean;
+	showToast?: boolean; // Nueva prop para controlar toast
 };
 
 export default function EditProductForm({
@@ -38,10 +39,12 @@ export default function EditProductForm({
 	onSave,
 	onCancel,
 	isLoading = false,
+	showToast = true, // Por defecto mostrar toast
 }: Readonly<EditProductFormProps>) {
 	const { keycloak } = useKeycloak();
-	const [error, setError] = useState<string | null>(null);
-	const [success, setSuccess] = useState<string | null>(null);
+	
+	// Removimos los estados de error y success ya que los toasts se encargan de esto
+	const [formError, setFormError] = useState<string | null>(null); // Solo para errores de validación del form
 
 	// Get categories without "ALL" option since we're editing a product
 	const categories = getCategoriesWithoutAll();
@@ -62,12 +65,13 @@ export default function EditProductForm({
 
 	const [isFormValid, setIsFormValid] = useState<boolean>(true);
 
-	// Use the update hook
+	// Use the update hook with toast support
 	const { updateProductById, isUpdating } = useUpdateProduct({
 		token: keycloak?.token ?? '',
+		showToast, // Pasar la prop de toast al hook
 		onSuccess: async (updatedProduct) => {
-			setSuccess('Producto actualizado exitosamente');
-			setError(null);
+			// Clear any form errors
+			setFormError(null);
 			
 			// Convert Product to EditProductData for the callback
 			const editProductData: EditProductData = {
@@ -85,8 +89,11 @@ export default function EditProductForm({
 			}
 		},
 		onError: (err) => {
-			setError(err.message);
-			setSuccess(null);
+			// Solo setear error si es algo crítico que necesita ser mostrado en el form
+			// Los toasts ya manejan la mayoría de errores
+			if (err.message.includes('Token') || err.message.includes('sesión')) {
+				setFormError('Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.');
+			}
 		},
 	});
 
@@ -158,9 +165,8 @@ export default function EditProductForm({
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		// Clear previous messages
-		setError(null);
-		setSuccess(null);
+		// Clear previous form errors
+		setFormError(null);
 
 		// Validate form
 		if (!validateForm()) return;
@@ -171,7 +177,7 @@ export default function EditProductForm({
 				await keycloak.updateToken(30);
 			} catch (tokenError) {
 				console.error('Error al renovar token:', tokenError);
-				setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+				setFormError('Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.');
 				return;
 			}
 		}
@@ -198,6 +204,10 @@ export default function EditProductForm({
 		if (errors[field]) {
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
+		// Clear form error when user makes changes
+		if (formError) {
+			setFormError(null);
+		}
 	};
 
 	const handleCancel = () => {
@@ -206,15 +216,10 @@ export default function EditProductForm({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
-			{error && (
+			{/* Solo mostrar errores críticos del formulario */}
+			{formError && (
 				<div className="p-3 mb-4 text-white bg-red-500 rounded-md">
-					{error}
-				</div>
-			)}
-
-			{success && (
-				<div className="p-3 mb-4 text-white bg-green-500 rounded-md">
-					{success}
+					{formError}
 				</div>
 			)}
 

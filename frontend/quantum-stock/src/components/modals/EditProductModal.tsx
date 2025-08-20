@@ -6,6 +6,7 @@ import EditProductForm, {
 import type Product from '@/lib/model/product.model';
 import { Modal, ModalBody, ModalContent, ModalHeader } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useState } from 'react';
 
 type EditProductModalProps = {
   isOpen: boolean;
@@ -20,6 +21,22 @@ export default function EditProductModal({
   product,
   onSave,
 }: Readonly<EditProductModalProps>) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSave = async (productData: EditProductData) => {
+    try {
+      setIsLoading(true);
+      await onSave(productData);
+      // After the product has been saved successfully, close the modal
+      onClose();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      // Don't close the modal if there's an error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
       <ModalContent>
@@ -35,9 +52,9 @@ export default function EditProductModal({
         <ModalBody>
           <EditProductForm
             product={product}
-            onSave={onSave}
+            onSave={handleSave}
             onCancel={onClose}
-            isLoading={false}
+            isLoading={isLoading}
           />
         </ModalBody>
       </ModalContent>

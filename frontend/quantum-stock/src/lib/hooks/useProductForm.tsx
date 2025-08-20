@@ -5,10 +5,11 @@ import type { NewProductData } from '@components/forms/types/product.types';
 import type Product from '@/lib/model/product.model';
 import { useState, useEffect } from 'react';
 import useSWRMutation from 'swr/mutation';
+import { toast } from 'react-hot-toast';
+import { useNotifications } from '@/lib/hooks/useNotifications';
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
-// Extended error type that includes a general form error
 type FormErrors = Partial<Record<keyof NewProductData, string>> & { form?: string };
 
 type UseProductFormProps = {
@@ -19,6 +20,8 @@ type UseProductFormProps = {
   onCancel?: () => void;
   onChange?: () => void;
   token: string;
+  showToast?: boolean;
+  refreshNotifications?: boolean;
 };
 
 export default function useProductForm({
@@ -28,9 +31,12 @@ export default function useProductForm({
   onError,
   onCancel,
   onChange,
-  token
+  token,
+  showToast = true,
+  refreshNotifications = true,
 }: UseProductFormProps) {
-  // Initialize form data based on mode
+  const { refetch: refetchNotifications } = useNotifications();
+
   const [formData, setFormData] = useState<NewProductData>({
     name: initialProduct?.name ?? '',
     description: initialProduct?.description ?? '',
@@ -40,11 +46,9 @@ export default function useProductForm({
     minQuantity: initialProduct?.minQuantity ?? 0,
   });
 
-  // Updated error state to use the extended FormErrors type
   const [errors, setErrors] = useState<FormErrors>({});
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
 
-  // SWR mutations
   const createMutation = useSWRMutation(
     `${API_URL}/products`,
     (key, { arg }: { arg: NewProductData }) =>
@@ -65,7 +69,6 @@ export default function useProductForm({
       })
   );
 
-  // Validate form whenever data changes
   useEffect(() => {
     const isValid = validateFormSilent();
     setIsFormValid(isValid);
@@ -75,7 +78,6 @@ export default function useProductForm({
     }
   }, [formData]);
 
-  // Silent validation that doesn't set errors
   const validateFormSilent = (): boolean => {
     if (!formData.name.trim()) return false;
     if (!formData.description.trim()) return false;
@@ -87,7 +89,6 @@ export default function useProductForm({
     return true;
   };
 
-  // Validation with error messages
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -122,7 +123,6 @@ export default function useProductForm({
   const updateField = (field: keyof NewProductData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     
-    // Clear error when user updates field
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -145,6 +145,16 @@ export default function useProductForm({
     if (onCancel) onCancel();
   };
 
+  const handleRefreshNotifications = async () => {
+    if (refreshNotifications) {
+      try {
+        await refetchNotifications();
+        console.log('✅ Notificaciones refrescadas exitosamente');
+      } catch (error) {
+        console.warn('⚠️ Error al refrescar notificaciones:', error);
+      }
+    }
+  };
 
   const submitForm = async (): Promise<Product | null> => {
     if (!validateForm()) {
@@ -156,10 +166,8 @@ export default function useProductForm({
         throw new Error('Token de autenticación no encontrado. Por favor, inicie sesión nuevamente.');
       }
 
-      // Format the data before submission - convert category to uppercase
       const formattedData = {
         ...formData,
-        // Ensure category is in uppercase format
         category: formData.category.toUpperCase().replace(/ /g, '_')
       };
 
@@ -167,12 +175,32 @@ export default function useProductForm({
 
       if (mode === 'create') {
         result = await createMutation.trigger(formattedData);
+        
+        if (showToast && result) {
+          toast.success(`Producto "${result.name}" creado exitosamente`, {
+            duration: 4000,
+            position: 'top-right',
+            icon: '✅',
+          });
+        }
       } else if (mode === 'edit' && initialProduct?.id) {
         result = await updateMutation.trigger({
           ...formattedData,
           id: initialProduct.id,
           quantity: formattedData.quantity,
         } as Product);
+        
+        if (showToast && result) {
+          toast.success(`Producto "${result.name}" actualizado exitosamente`, {
+            duration: 4000,
+            position: 'top-right',
+            icon: '📝',
+          });
+        }
+      }
+
+      if (result) {
+        await handleRefreshNotifications();
       }
 
       if (onSuccess && result) {
@@ -183,6 +211,15 @@ export default function useProductForm({
       return result || null;
     } catch (error) {
       console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} product:`, error);
+      
+      if (showToast) {
+        const errorMessage = error instanceof Error ? error.message : 'Error al procesar el producto';
+        toast.error(errorMessage, {
+          duration: 5000,
+          position: 'top-right',
+          icon: '❌',
+        });
+      }
       
       if (onError && error instanceof Error) {
         onError(error);
@@ -199,7 +236,6 @@ export default function useProductForm({
     }
   };
 
-
   const isSubmitting = 
     mode === 'create' 
       ? createMutation.isMutating 
@@ -214,5 +250,6 @@ export default function useProductForm({
     handleCancel,
     submitForm,
     resetForm,
+    refreshNotifications: handleRefreshNotifications,
   };
 }
