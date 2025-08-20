@@ -53,6 +53,7 @@ public class ProductController {
                                                   @AuthenticationPrincipal Jwt jwt) {
         String user = Utils.extractUsernameFromJwt(jwt);
         Product productDetails = objectMapper.convertValue(productRequest, Product.class);
+        productDetails.setActive(true);
         Product updatedProduct = productService.update(id, productDetails, user);
 
         if (updatedProduct == null)

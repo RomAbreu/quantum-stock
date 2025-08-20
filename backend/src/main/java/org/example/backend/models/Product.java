@@ -38,4 +38,12 @@ public class Product implements Serializable {
 
     @Column(nullable = false)
     private int minQuantity;
+
+    @Column(nullable = false)
+    private boolean isActive;
+
+    @PrePersist
+    private void prePersist() {
+        this.isActive = true;
+    }
 }

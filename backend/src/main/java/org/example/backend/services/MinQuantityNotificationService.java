@@ -5,6 +5,8 @@ import org.example.backend.models.MinQuantityNotification;
 import org.example.backend.repositories.MinQuantityNotificationRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class MinQuantityNotificationService {
@@ -16,5 +18,13 @@ public class MinQuantityNotificationService {
 
     public void saveNotification(MinQuantityNotification notification) {
         minQuantityNotificationRepository.save(notification);
+    }
+
+    public MinQuantityNotification getNotificationById(Long id) {
+        return minQuantityNotificationRepository.findById(id).orElse(null);
+    }
+
+    public List<MinQuantityNotification> getAllNotifications() {
+        return minQuantityNotificationRepository.findAll();
     }
 }

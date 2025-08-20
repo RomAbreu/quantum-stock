@@ -36,16 +36,15 @@ public class ProductSpecifications {
                 );
             }
 
+            // check if product is active
+            predicates.add(cb.isTrue(root.get("isActive")));
+
             if (filters.minPrice() != null && filters.maxPrice() != null) {
                 predicates.add(cb.between(root.get("price"), filters.minPrice(), filters.maxPrice()));
             } else if (filters.minPrice() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("price"), filters.minPrice()));
             } else if (filters.maxPrice() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), filters.maxPrice()));
-            }
-
-            if (predicates.isEmpty()) {
-                return cb.conjunction();
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -31,7 +31,7 @@ public class ProductService {
     public Product create(Product product, String user) {
         Product productCreated = productRepository.save(product);
         logInventoryMovement(productCreated, productCreated.getQuantity(), InventoryMovementType.IN, user);
-        handleMinQuantityNotification(productCreated);
+        handleMinQuantityNotification(productCreated, false);
         return productCreated;
     }
 
@@ -41,15 +41,17 @@ public class ProductService {
         if (oldProduct == null)
             return null;
 
+        int previousQuantity = oldProduct.getQuantity();
+        newProduct.setId(id);
         productRepository.save(newProduct);
 
-        if (oldProduct.getQuantity() != newProduct.getQuantity()) {
+        if (previousQuantity != newProduct.getQuantity()) {
             int quantityChange = newProduct.getQuantity() - oldProduct.getQuantity();
             InventoryMovementType type = quantityChange > 0 ? InventoryMovementType.IN : InventoryMovementType.OUT;
             logInventoryMovement(newProduct, newProduct.getQuantity(), type, user);
         }
 
-        handleMinQuantityNotification(newProduct);
+        handleMinQuantityNotification(newProduct, false);
 
         return newProduct;
     }
@@ -60,7 +62,9 @@ public class ProductService {
         if (product == null)
             return null;
 
-        productRepository.delete(product);
+        product.setActive(false);
+        productRepository.save(product);
+        handleMinQuantityNotification(product, true);
         return product;
     }
 
@@ -74,7 +78,13 @@ public class ProductService {
         inventoryMovementService.create(inventoryMovement);
     }
 
-    private void handleMinQuantityNotification(Product product) {
+    private void handleMinQuantityNotification(Product product, boolean isProductBeingDeleted) {
+        MinQuantityNotification existingNotification = minQuantityNotificationService.getNotificationById(product.getId());
+        if (existingNotification != null && isProductBeingDeleted) {
+            minQuantityNotificationService.deleteNotificationByProductId(product.getId());
+            return;
+        }
+
         if (product.getQuantity() < product.getMinQuantity()) {
             MinQuantityNotification notification = MinQuantityNotification.builder()
                     .id(product.getId())
