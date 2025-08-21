@@ -38,7 +38,7 @@ public class ProductService {
     public Product update(Long id, Product newProduct, String user) {
         Product oldProduct = productRepository.findById(id).orElse(null);
 
-        if (oldProduct == null)
+        if (oldProduct == null || !oldProduct.isActive())
             return null;
 
         int previousQuantity = oldProduct.getQuantity();
