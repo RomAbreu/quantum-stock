@@ -7,17 +7,22 @@ import { useKeycloak } from '@react-keycloak/web';
 import React, { useState, useEffect, useMemo } from 'react';
 
 import DashboardLoader from '@/components/loaders/DashboardLoader';
+import { EndpointEnum } from '@/lib/constants/routes.constants';
 
 export default function MovementsPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const { movements, isLoading, refetch } = useInventoryMovements();
   const { keycloak, initialized } = useKeycloak();
 
-  // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
+
+  const hasPermission = useMemo(() => {
+    const roles = keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
+    return roles.includes('admin') || roles.includes('employee');
+  }, [keycloak.resourceAccess]);
 
   useEffect(() => {
     if (initialized && !keycloak.authenticated) {
@@ -26,8 +31,10 @@ export default function MovementsPage() {
       keycloak.login({
         redirectUri: `${window.location.origin}/movements`,
       });
+    } else if (initialized && keycloak.authenticated && !hasPermission) {
+      window.location.href = EndpointEnum.Home;
     }
-  }, [initialized, keycloak]);
+  }, [initialized, keycloak, hasPermission]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -50,7 +57,6 @@ export default function MovementsPage() {
     });
   }, [movements, searchTerm, typeFilter]);
 
-  // Pagination
   const pages = Math.ceil(filteredMovements.length / rowsPerPage);
   const paginatedMovements = useMemo(() => {
     const start = (currentPage - 1) * rowsPerPage;
@@ -90,6 +96,27 @@ export default function MovementsPage() {
             }
           >
             Iniciar Sesión
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (initialized && keycloak.authenticated && !hasPermission) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-6 bg-background">
+        <div className="text-center">
+          <h1 className="mb-2 text-2xl font-bold">Acceso no autorizado</h1>
+          <p className="mb-4 text-default-500">
+            No tienes permisos suficientes para ver los movimientos de inventario.
+          </p>
+          <Button
+            color="primary"
+            onPress={() => {
+              window.location.href = EndpointEnum.Home;
+            }}
+          >
+            Volver al Dashboard
           </Button>
         </div>
       </div>
