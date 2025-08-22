@@ -5,6 +5,7 @@ export const EndpointEnum = {
 	Login: NEXT_KEYCLOAK_AUTH_URL,
 	Stock: '/stock',
 	Dashboard: '/dashboard',
+	Movements: '/movements',
 } as const;
 
 export type EndpointEnumType = (typeof EndpointEnum)[keyof typeof EndpointEnum];

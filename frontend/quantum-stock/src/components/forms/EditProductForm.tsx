@@ -1,19 +1,22 @@
 'use client';
 
-import type Product from '@/lib/model/product.model';
-import { useUpdateProduct } from '@/lib/hooks/useUpdateProduct';
 import {
+	getCategoriesWithoutAll,
+	isValidCategory,
+} from '@/lib/constants/categories.constants';
+import { useUpdateProduct } from '@/lib/hooks/useUpdateProduct';
+import type Product from '@/lib/model/product.model';
+import {
+	Autocomplete,
+	AutocompleteItem,
 	Button,
 	Divider,
 	Input,
-	Autocomplete,
-	AutocompleteItem,
 	Textarea,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect, useState } from 'react';
-import { getCategoriesWithoutAll, isValidCategory } from '@/lib/constants/categories.constants';
 import type { Key } from 'react';
 
 export type EditProductData = {
@@ -42,7 +45,7 @@ export default function EditProductForm({
 	showToast = true, // Por defecto mostrar toast
 }: Readonly<EditProductFormProps>) {
 	const { keycloak } = useKeycloak();
-	
+
 	// Removimos los estados de error y success ya que los toasts se encargan de esto
 	const [formError, setFormError] = useState<string | null>(null); // Solo para errores de validación del form
 
@@ -72,7 +75,7 @@ export default function EditProductForm({
 		onSuccess: async (updatedProduct) => {
 			// Clear any form errors
 			setFormError(null);
-			
+
 			// Convert Product to EditProductData for the callback
 			const editProductData: EditProductData = {
 				id: updatedProduct.id,
@@ -83,7 +86,7 @@ export default function EditProductForm({
 				quantity: updatedProduct.quantity,
 				minQuantity: updatedProduct.minQuantity,
 			};
-			
+
 			if (onSave) {
 				await onSave(editProductData);
 			}
@@ -92,7 +95,9 @@ export default function EditProductForm({
 			// Solo setear error si es algo crítico que necesita ser mostrado en el form
 			// Los toasts ya manejan la mayoría de errores
 			if (err.message.includes('Token') || err.message.includes('sesión')) {
-				setFormError('Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.');
+				setFormError(
+					'Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.',
+				);
 			}
 		},
 	});
@@ -129,26 +134,25 @@ export default function EditProductForm({
 		return Object.keys(newErrors).length === 0;
 	};
 
-	// Validar formulario cada vez que cambian los datos
 	useEffect(() => {
-		const isValid = validateFormSilent();
+		const isValid = validateFormSilent(formData);
 		setIsFormValid(isValid);
 	}, [formData]);
 
-	const validateFormSilent = (): boolean => {
-		if (!formData.name.trim()) return false;
-		if (!formData.description.trim()) return false;
-		if (!formData.category || !isValidCategory(formData.category)) return false;
-		if (formData.price <= 0) return false;
-		if (formData.quantity < 0) return false;
-		if (formData.minQuantity < 0) return false;
+	const validateFormSilent = (data: EditProductData): boolean => {
+		if (!data.name.trim()) return false;
+		if (!data.description.trim()) return false;
+		if (!data.category || !isValidCategory(data.category)) return false;
+		if (data.price <= 0) return false;
+		if (data.quantity < 0) return false;
+		if (data.minQuantity < 0) return false;
 
 		return true;
 	};
 
 	const handleCategoryChange = (key: Key | null) => {
 		const selectedCategory = key?.toString() ?? '';
-		
+
 		// Validate that the selected category is valid
 		if (selectedCategory && isValidCategory(selectedCategory)) {
 			updateField('category', selectedCategory);
@@ -158,9 +162,10 @@ export default function EditProductForm({
 	};
 
 	// Ensure the selected category is valid for the Autocomplete
-	const selectedCategoryKey = formData.category && isValidCategory(formData.category) 
-		? formData.category
-		: null;
+	const selectedCategoryKey =
+		formData.category && isValidCategory(formData.category)
+			? formData.category
+			: null;
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -177,7 +182,9 @@ export default function EditProductForm({
 				await keycloak.updateToken(30);
 			} catch (tokenError) {
 				console.error('Error al renovar token:', tokenError);
-				setFormError('Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.');
+				setFormError(
+					'Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.',
+				);
 				return;
 			}
 		}
@@ -373,14 +380,10 @@ export default function EditProductForm({
 					isLoading={isLoading || isUpdating}
 					isDisabled={!isFormValid || isLoading || isUpdating}
 					startContent={
-						!isLoading && !isUpdating ? (
-							<Icon icon="lucide:save" />
-						) : null
+						!isLoading && !isUpdating ? <Icon icon="lucide:save" /> : null
 					}
 				>
-					{isLoading || isUpdating
-						? 'Guardando...'
-						: 'Actualizar Producto'}
+					{isLoading || isUpdating ? 'Guardando...' : 'Actualizar Producto'}
 				</Button>
 			</div>
 		</form>

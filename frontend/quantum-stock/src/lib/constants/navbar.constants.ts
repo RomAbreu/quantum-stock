@@ -1,18 +1,22 @@
-import { EndpointEnum } from "./routes.constants";
+import { EndpointEnum } from './routes.constants';
 
 interface NavbarLink {
-    label: string;
-    href: string;
-    icon?: React.ReactNode;
+	label: string;
+	href: string;
+	icon?: React.ReactNode;
 }
 
 export const navbarItems: NavbarLink[] = [
-    { 
-        label: 'Stock', 
-        href: EndpointEnum.Stock, 
-    },
-    { 
-        label: 'Dashboard', 
-        href: EndpointEnum.Dashboard, 
-    },
+	{
+		label: 'Stock',
+		href: EndpointEnum.Stock,
+	},
+	{
+		label: 'Dashboard',
+		href: EndpointEnum.Dashboard,
+	},
+	{
+		label: 'Movements',
+		href: EndpointEnum.Movements,
+	}
 ];

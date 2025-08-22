@@ -1,9 +1,9 @@
 'use client';
 
 import { HeroUIProvider } from '@heroui/react';
+import { useKeycloak } from '@hooks/useKeycloak';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { useRouter } from 'next/navigation';
-import { useKeycloak } from '@hooks/useKeycloak';
 
 // @ts-ignore
 declare module '@react-types/shared' {
@@ -14,7 +14,9 @@ declare module '@react-types/shared' {
 	}
 }
 
-export function Providers({	children,}: Readonly<{ children: React.ReactNode }>) {
+export function Providers({
+	children,
+}: Readonly<{ children: React.ReactNode }>) {
 	const router = useRouter();
 
 	const { keycloak, initOptions } = useKeycloak();
