@@ -20,10 +20,8 @@ type StatsCardsProps = {
 export default function StatsCards({
 	stockItems = [],
 }: Readonly<StatsCardsProps>) {
-	// Use empty array if stockItems is null or undefined
 	const items = Array.isArray(stockItems) ? stockItems : [];
 
-	// Calculate stock statistics
 	const lowStockItems = items.filter(
 		(item) => item.quantity > 0 && item.quantity <= (item.minQuantity ?? 0),
 	);
@@ -32,7 +30,6 @@ export default function StatsCards({
 		(item) => item.quantity > (item.minQuantity ?? 0),
 	);
 
-	// Calculate additional metrics
 	const totalStock = items.reduce((sum, item) => sum + item.quantity, 0);
 	const totalValue = items
 		.reduce((sum, item) => sum + item.price * item.quantity, 0)

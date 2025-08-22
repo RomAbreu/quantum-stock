@@ -34,7 +34,7 @@ type EditProductFormProps = {
 	onSave?: (product: EditProductData) => Promise<void>;
 	onCancel: () => void;
 	isLoading?: boolean;
-	showToast?: boolean; // Nueva prop para controlar toast
+	showToast?: boolean;
 };
 
 export default function EditProductForm({
@@ -42,14 +42,12 @@ export default function EditProductForm({
 	onSave,
 	onCancel,
 	isLoading = false,
-	showToast = true, // Por defecto mostrar toast
+	showToast = true,
 }: Readonly<EditProductFormProps>) {
 	const { keycloak } = useKeycloak();
 
-	// Removimos los estados de error y success ya que los toasts se encargan de esto
-	const [formError, setFormError] = useState<string | null>(null); // Solo para errores de validación del form
+	const [formError, setFormError] = useState<string | null>(null);
 
-	// Get categories without "ALL" option since we're editing a product
 	const categories = getCategoriesWithoutAll();
 
 	const [formData, setFormData] = useState<EditProductData>({
@@ -68,15 +66,12 @@ export default function EditProductForm({
 
 	const [isFormValid, setIsFormValid] = useState<boolean>(true);
 
-	// Use the update hook with toast support
 	const { updateProductById, isUpdating } = useUpdateProduct({
 		token: keycloak?.token ?? '',
-		showToast, // Pasar la prop de toast al hook
-		onSuccess: async (updatedProduct) => {
-			// Clear any form errors
+		showToast,
+		onSuccess: (updatedProduct) => {
 			setFormError(null);
 
-			// Convert Product to EditProductData for the callback
 			const editProductData: EditProductData = {
 				id: updatedProduct.id,
 				name: updatedProduct.name,
@@ -88,12 +83,10 @@ export default function EditProductForm({
 			};
 
 			if (onSave) {
-				await onSave(editProductData);
+				onSave(editProductData);
 			}
 		},
 		onError: (err) => {
-			// Solo setear error si es algo crítico que necesita ser mostrado en el form
-			// Los toasts ya manejan la mayoría de errores
 			if (err.message.includes('Token') || err.message.includes('sesión')) {
 				setFormError(
 					'Tu sesión ha expirado. Por favor, refresca la página e inicia sesión nuevamente.',
@@ -102,7 +95,6 @@ export default function EditProductForm({
 		},
 	});
 
-	// Función para validar el formulario
 	const validateForm = (): boolean => {
 		const newErrors: Partial<Record<keyof EditProductData, string>> = {};
 
@@ -153,7 +145,6 @@ export default function EditProductForm({
 	const handleCategoryChange = (key: Key | null) => {
 		const selectedCategory = key?.toString() ?? '';
 
-		// Validate that the selected category is valid
 		if (selectedCategory && isValidCategory(selectedCategory)) {
 			updateField('category', selectedCategory);
 		} else {
@@ -161,7 +152,6 @@ export default function EditProductForm({
 		}
 	};
 
-	// Ensure the selected category is valid for the Autocomplete
 	const selectedCategoryKey =
 		formData.category && isValidCategory(formData.category)
 			? formData.category
@@ -170,13 +160,10 @@ export default function EditProductForm({
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		// Clear previous form errors
 		setFormError(null);
 
-		// Validate form
 		if (!validateForm()) return;
 
-		// Check token
 		if (keycloak.isTokenExpired()) {
 			try {
 				await keycloak.updateToken(30);
@@ -189,7 +176,6 @@ export default function EditProductForm({
 			}
 		}
 
-		// Convert EditProductData to Product format
 		const productToUpdate: Product = {
 			id: formData.id,
 			name: formData.name,
@@ -211,7 +197,6 @@ export default function EditProductForm({
 		if (errors[field]) {
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
-		// Clear form error when user makes changes
 		if (formError) {
 			setFormError(null);
 		}
@@ -223,14 +208,12 @@ export default function EditProductForm({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
-			{/* Solo mostrar errores críticos del formulario */}
 			{formError && (
 				<div className="p-3 mb-4 text-white bg-red-500 rounded-md">
 					{formError}
 				</div>
 			)}
 
-			{/* Información Básica */}
 			<div className="space-y-4">
 				<div className="flex items-center gap-2 mb-3">
 					<Icon icon="lucide:info" className="text-primary" />
@@ -293,7 +276,6 @@ export default function EditProductForm({
 
 			<Divider />
 
-			{/* Información Financiera y Stock */}
 			<div className="space-y-4">
 				<div className="flex items-center gap-2 mb-3">
 					<Icon icon="lucide:dollar-sign" className="text-success" />
@@ -363,7 +345,6 @@ export default function EditProductForm({
 				/>
 			</div>
 
-			{/* Form Actions */}
 			<div className="flex justify-end gap-3 pt-4">
 				<Button
 					color="danger"

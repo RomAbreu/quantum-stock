@@ -93,7 +93,7 @@ export const useDashboard = (): DashboardData => {
 		isLoading: true,
 	});
 
-	const { movements, isLoading, isError } = useInventoryMovements();
+	const { movements, isLoading, error: isError } = useInventoryMovements();
 
 	useEffect(() => {
 		if (isError) {

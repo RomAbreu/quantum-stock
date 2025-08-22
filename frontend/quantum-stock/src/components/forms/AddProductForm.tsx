@@ -34,8 +34,8 @@ export default function AddProductForm({
 		submitForm,
 	} = useProductForm({
 		mode: 'create',
-		onSuccess: async (product) => {
-			if (onSave) await onSave(product);
+		onSuccess: (product) => {
+			if (onSave) onSave(product);
 		},
 		onError: (error) => console.error('Error creating product:', error),
 		onCancel,
@@ -48,15 +48,12 @@ export default function AddProductForm({
 		await submitForm();
 	};
 
-	// Determine if fields should be disabled
 	const isDisabled = isLoading || isSubmitting;
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
-			{/* Form error display */}
 			<FormErrorDisplay error={errors.form} />
 
-			{/* Basic Information */}
 			<BasicInformationSection
 				formData={formData}
 				errors={errors}
@@ -66,7 +63,6 @@ export default function AddProductForm({
 
 			<Divider />
 
-			{/* Pricing and Stock */}
 			<PricingAndStockSection
 				formData={formData}
 				errors={errors}
@@ -74,7 +70,6 @@ export default function AddProductForm({
 				isDisabled={isDisabled}
 			/>
 
-			{/* Form Actions */}
 			<FormActions
 				onCancel={handleCancel}
 				isLoading={isLoading}

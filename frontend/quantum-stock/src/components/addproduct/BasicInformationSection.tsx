@@ -21,13 +21,11 @@ export default function BasicInformationSection({
 	updateField,
 	isDisabled,
 }: Readonly<BasicInformationSectionProps>) {
-	// Get categories without "ALL" option since we're creating a product
 	const categories = getCategoriesWithoutAll();
 
 	const handleCategoryChange = (key: Key | null) => {
 		const selectedCategory = key?.toString() ?? '';
 
-		// Validate that the selected category is valid
 		if (selectedCategory && isValidCategory(selectedCategory)) {
 			updateField('category', selectedCategory);
 		} else {
@@ -35,7 +33,6 @@ export default function BasicInformationSection({
 		}
 	};
 
-	// Ensure the selected category is valid for the Autocomplete
 	const selectedCategoryKey =
 		formData.category && isValidCategory(formData.category)
 			? formData.category

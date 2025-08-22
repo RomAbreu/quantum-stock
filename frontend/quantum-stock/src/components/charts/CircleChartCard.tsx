@@ -1,16 +1,8 @@
 import {
-	Button,
 	Card,
 	CardBody,
 	CardHeader,
-	Dropdown,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
-	Select,
-	SelectItem,
 } from '@heroui/react';
-import { Icon } from '@iconify/react';
 import React from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 

@@ -10,7 +10,6 @@ export default function Footer() {
 	return (
 		<footer className="relative z-10 w-full py-6 mt-auto bg-gray-900">
 			<div className="container flex flex-col items-center px-4 mx-auto">
-				{/* Centered Logo */}
 				<Link href={EndpointEnum.Home} className="mb-4">
 					<Image
 						src="/images/logo.png"
@@ -25,7 +24,6 @@ export default function Footer() {
 					/>
 				</Link>
 
-				{/* Copyright Text */}
 				<p className="text-sm text-center text-default-300">
 					&copy; {CURRENT_YEAR} QuantumStock
 				</p>

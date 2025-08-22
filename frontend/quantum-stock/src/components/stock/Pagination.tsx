@@ -19,7 +19,6 @@ export default function Pagination({
 	totalElements = 0,
 	pageSize = 10,
 }: Readonly<PaginationProps>) {
-	// No mostrar paginación si hay solo 1 página o menos
 	if (totalPages <= 1) return null;
 
 	const getVisiblePages = () => {

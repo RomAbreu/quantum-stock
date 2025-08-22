@@ -7,7 +7,7 @@ import type { Key } from 'react';
 type FilterByCategoryProps = {
 	defaultValue: string;
 	onChange: (category: string) => void;
-	categories?: never; // Ya no necesitamos este prop
+	categories?: never;
 };
 
 export default function FilterByCategory({
@@ -23,7 +23,6 @@ export default function FilterByCategory({
 		}
 	};
 
-	// Convert defaultValue to match our category format
 	const selectedKey = defaultValue === 'all' ? 'ALL' : defaultValue;
 
 	return (

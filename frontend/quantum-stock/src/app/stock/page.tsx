@@ -21,14 +21,13 @@ import StockTable from '@/components/tables/StockTable';
 import { useStockPage } from '@/lib/hooks/useStockPage';
 import type Product from '@/lib/model/product.model';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 
 const breadcrumbItems: BreadCrumbNavigationItem[] = [
 	{ name: 'Inicio', href: '/' },
 	{ name: 'Inventario', href: '/stock' },
 ];
 
-// Create a client component that uses useSearchParams
 function StockPageContent() {
 	const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 	const searchParams = useSearchParams();
@@ -39,7 +38,6 @@ function StockPageContent() {
 	const minPrice = searchParams.get('minPrice') ?? '';
 	const maxPrice = searchParams.get('maxPrice') ?? '';
 
-	// Tamaño de página consistente
 	const PAGE_SIZE = 10;
 
 	const [searchKey, setSearchKey] = useState(0);
@@ -71,7 +69,7 @@ function StockPageContent() {
 		category: filterCategory !== 'all' ? filterCategory : undefined,
 		minPrice: minPrice || undefined,
 		maxPrice: maxPrice || undefined,
-		size: PAGE_SIZE, // Usar constante
+		size: PAGE_SIZE,
 	});
 
 	const handleSaveProduct = async (newProduct: Product) => {
@@ -85,7 +83,7 @@ function StockPageContent() {
 
 	const handleCategoryChange = (category: string) => {
 		const params = new URLSearchParams(searchParams.toString());
-		params.set('page', '1'); // Reset to page 1
+		params.set('page', '1');
 
 		if (category && category !== 'all') {
 			params.set('category', category);
@@ -161,7 +159,6 @@ function StockPageContent() {
 									/>
 								)}
 
-								{/* Componente de paginación */}
 								<Pagination
 									currentPage={currentPage}
 									totalPages={totalPages}
@@ -218,7 +215,6 @@ function StockPageContent() {
 	);
 }
 
-// Main page component with Suspense boundary
 export default function StockPage() {
 	return (
 		<Suspense fallback={<LoadingView message="Cargando página de stock..." />}>

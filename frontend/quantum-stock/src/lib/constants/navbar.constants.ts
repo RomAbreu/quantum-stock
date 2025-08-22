@@ -18,5 +18,5 @@ export const navbarItems: NavbarLink[] = [
 	{
 		label: 'Movements',
 		href: EndpointEnum.Movements,
-	}
+	},
 ];

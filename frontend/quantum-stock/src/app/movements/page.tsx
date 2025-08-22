@@ -1,22 +1,20 @@
 'use client';
 
 import { usePaginatedInventoryMovements } from '@/lib/hooks/useMovement';
-import { usePagination } from '@/lib/hooks/usePagination';
-import { 
-    Chip, 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableColumn, 
-    TableHeader, 
-    TableRow, 
-    Tooltip, 
+import type InventoryMovement from '@/lib/model/movement.model';
+import {
     Button,
-    Pagination
+    Chip,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import type InventoryMovement from '@/lib/model/movement.model';
+import Pagination from '@/components/stock/Pagination';
 
 const movementColumns = [
     { name: 'Producto', uid: 'product' },
@@ -27,34 +25,31 @@ const movementColumns = [
 ];
 
 export default function MovementsPage() {
-    const { 
-        movements, 
-        totalElements, 
-        totalPages,
-        currentPage,
-        refreshMovements
+    const {
+        movements,
+        totalElements,
+        refreshMovements,
     } = usePaginatedInventoryMovements();
 
-    const pagination = usePagination({
-        totalRegisters: totalElements,
-        registersPerPage: 10,
-        siblingsCount: 1,
-        pageParam: 'page',
-    });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [visibleMovements, setVisibleMovements] = useState<InventoryMovement[]>(
+        [],
+    );
 
-    const [visibleMovements, setVisibleMovements] = useState<InventoryMovement[]>([]);
+    const pageSize = 10;
+    const totalPages = Math.ceil(totalElements / pageSize);
 
     useEffect(() => {
-        // Actualizar solo los movimientos visibles cuando cambia la página
-        const startIndex = (pagination.currentPage - 1) * pagination.registersPerPage;
-        const endIndex = pagination.currentPage * pagination.registersPerPage;
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = currentPage * pageSize;
 
-        // Evitar actualizaciones innecesarias
         const newVisibleMovements = movements.slice(startIndex, endIndex);
-        if (JSON.stringify(newVisibleMovements) !== JSON.stringify(visibleMovements)) {
+        if (
+            JSON.stringify(newVisibleMovements) !== JSON.stringify(visibleMovements)
+        ) {
             setVisibleMovements(newVisibleMovements);
         }
-    }, [movements, pagination.currentPage, pagination.registersPerPage, visibleMovements]);
+    }, [movements, currentPage, pageSize, visibleMovements]);
 
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
@@ -73,8 +68,12 @@ export default function MovementsPage() {
                 case 'product':
                     return (
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold">{movement.product.name}</span>
-                            <span className="text-xs text-default-500">ID: {movement.product.id}</span>
+                            <span className="text-sm font-semibold">
+                                {movement.product.name}
+                            </span>
+                            <span className="text-xs text-default-500">
+                                ID: {movement.product.id}
+                            </span>
                         </div>
                     );
                 case 'type':
@@ -89,14 +88,19 @@ export default function MovementsPage() {
                     );
                 case 'quantityChange':
                     return (
-                        <span className={movement.type === 'IN' ? 'text-success-600 font-semibold' : 'text-warning-600 font-semibold'}>
-                            {movement.type === 'IN' ? '+' : '-'}{Math.abs(movement.quantityChange)}
+                        <span
+                            className={
+                                movement.type === 'IN'
+                                    ? 'text-success-600 font-semibold'
+                                    : 'text-warning-600 font-semibold'
+                            }
+                        >
+                            {movement.type === 'IN' ? '+' : '-'}
+                            {Math.abs(movement.quantityChange)}
                         </span>
                     );
                 case 'user':
-                    return (
-                        <span className="text-sm">{movement.user}</span>
-                    );
+                    return <span className="text-sm">{movement.user}</span>;
                 case 'date':
                     return (
                         <span className="text-sm text-default-600">
@@ -107,7 +111,7 @@ export default function MovementsPage() {
                     return <></>;
             }
         },
-        [formatDate]
+        [formatDate],
     );
 
     return (
@@ -115,7 +119,9 @@ export default function MovementsPage() {
             <div className="mx-auto space-y-8 max-w-7xl">
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground">Movimientos de Inventario</h1>
+                        <h1 className="text-3xl font-bold text-foreground">
+                            Movimientos de Inventario
+                        </h1>
                         <p className="mt-1 text-default-500">
                             Historial de entradas y salidas de productos
                             {totalElements > 0 && ` (${totalElements} resultados)`}
@@ -124,7 +130,9 @@ export default function MovementsPage() {
                     <div className="flex items-center gap-3">
                         <Button
                             color="primary"
-                            startContent={<Icon icon="lucide:refresh-cw" className="w-4 h-4" />}
+                            startContent={
+                                <Icon icon="lucide:refresh-cw" className="w-4 h-4" />
+                            }
                             onPress={() => refreshMovements()}
                         >
                             Actualizar Datos
@@ -132,7 +140,6 @@ export default function MovementsPage() {
                     </div>
                 </div>
 
-                {/* Tabla con el mismo diseño que StockTable */}
                 <div className="border rounded-lg bg-content1">
                     <Table aria-label="Tabla de movimientos de inventario">
                         <TableHeader columns={movementColumns}>
@@ -144,12 +151,20 @@ export default function MovementsPage() {
                                 </TableColumn>
                             )}
                         </TableHeader>
-                        <TableBody items={visibleMovements} emptyContent="No hay movimientos para mostrar">
+                        <TableBody
+                            items={visibleMovements}
+                            emptyContent="No hay movimientos para mostrar"
+                        >
                             {(movement) => (
                                 <TableRow key={movement.id}>
                                     {(columnKey) => (
                                         <TableCell>
-                                            {renderCell(movement, columnKey as string) as React.ReactNode}
+                                            {
+                                                renderCell(
+                                                    movement,
+                                                    columnKey as string,
+                                                ) as React.ReactNode
+                                            }
                                         </TableCell>
                                     )}
                                 </TableRow>
@@ -158,77 +173,13 @@ export default function MovementsPage() {
                     </Table>
                 </div>
 
-                {/* Paginación usando el hook usePagination */}
-                {pagination.totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-2 mt-6">
-                        {/* Botón página anterior */}
-                        <Button
-                            size="sm"
-                            variant="light"
-                            isDisabled={pagination.currentPage === 1}
-                            onPress={pagination.goToPreviousPage}
-                            startContent={<Icon icon="lucide:chevron-left" className="w-4 h-4" />}
-                        >
-                            Anterior
-                        </Button>
-
-                        {/* Páginas anteriores */}
-                        {pagination.previousPages.map((page) => (
-                            <Button 
-                                key={page} 
-                                size="sm"
-                                variant="light"
-                                onPress={() => pagination.goToPage(page)}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-
-                        {/* Página actual */}
-                        <Button 
-                            size="sm" 
-                            color="primary" 
-                            variant="solid"
-                            isDisabled
-                        >
-                            {pagination.currentPage}
-                        </Button>
-
-                        {/* Páginas siguientes */}
-                        {pagination.nextPages.map((page) => (
-                            <Button 
-                                key={page} 
-                                size="sm"
-                                variant="light"
-                                onPress={() => pagination.goToPage(page)}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-
-                        {/* Botón página siguiente */}
-                        <Button
-                            size="sm"
-                            variant="light"
-                            isDisabled={pagination.currentPage === pagination.totalPages}
-                            onPress={pagination.goToNextPage}
-                            endContent={<Icon icon="lucide:chevron-right" className="w-4 h-4" />}
-                        >
-                            Siguiente
-                        </Button>
-                    </div>
-                )}
-
-                {/* Información de paginación */}
-                {totalElements > 0 && (
-                    <div className="flex justify-center">
-                        <p className="text-sm text-default-500">
-                            Mostrando {((pagination.currentPage - 1) * pagination.registersPerPage) + 1} a{' '}
-                            {Math.min(pagination.currentPage * pagination.registersPerPage, totalElements)} de{' '}
-                            {totalElements} resultados
-                        </p>
-                    </div>
-                )}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    totalElements={totalElements}
+                    pageSize={pageSize}
+                />
             </div>
         </div>
     );

@@ -27,11 +27,9 @@ export default function EditProductModal({
 		try {
 			setIsLoading(true);
 			await onSave(productData);
-			// After the product has been saved successfully, close the modal
 			onClose();
 		} catch (error) {
 			console.error('Error saving product:', error);
-			// Don't close the modal if there's an error
 		} finally {
 			setIsLoading(false);
 		}

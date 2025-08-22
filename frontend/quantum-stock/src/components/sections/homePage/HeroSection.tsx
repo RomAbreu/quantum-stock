@@ -1,8 +1,7 @@
 'use client';
 
-import { Button, Image, Link } from '@heroui/react';
+import { Image } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { EndpointEnum } from '@lib/constants/routes.constants';
 import { useKeycloak } from '@react-keycloak/web';
 import { type Variants, motion } from 'framer-motion';
 import { useMemo } from 'react';
@@ -32,7 +31,7 @@ export default function HeroSection() {
 			transition: {
 				staggerChildren: 0.2,
 				duration: 0.8,
-				ease: [0.25, 0.46, 0.45, 0.94], // Custom cubic-bezier curve
+				ease: [0.25, 0.46, 0.45, 0.94],
 			},
 		},
 	};
@@ -80,7 +79,6 @@ export default function HeroSection() {
 		},
 	};
 
-	// Simplified welcome view for authenticated users without proper permissions
 	if (isAuthenticated && !hasPermission) {
 		return (
 			<motion.div
@@ -89,7 +87,6 @@ export default function HeroSection() {
 				initial="hidden"
 				animate="show"
 			>
-				{/* Floating Icon with Enhanced Glow */}
 				<motion.div variants={itemVariants} className="relative">
 					<motion.div
 						variants={floatingVariants}
@@ -109,7 +106,6 @@ export default function HeroSection() {
 						/>
 					</motion.div>
 
-					{/* Enhanced Glow Effects */}
 					<motion.div
 						variants={glowVariants}
 						initial="initial"
@@ -119,7 +115,6 @@ export default function HeroSection() {
 					<div className="absolute inset-0 scale-50 rounded-full blur-2xl opacity-20 bg-primary animate-pulse" />
 				</motion.div>
 
-				{/* Main Title */}
 				<motion.h1
 					variants={itemVariants}
 					className="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-lg"
@@ -134,7 +129,6 @@ export default function HeroSection() {
 					</motion.span>
 				</motion.h1>
 
-				{/* Welcome message */}
 				<motion.p
 					variants={itemVariants}
 					className="max-w-4xl mx-auto mt-2 text-lg leading-relaxed sm:text-xl md:text-2xl text-white/90 drop-shadow-lg"

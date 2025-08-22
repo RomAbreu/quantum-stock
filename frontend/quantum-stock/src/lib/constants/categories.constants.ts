@@ -1,4 +1,3 @@
-// lib/constants/categories.constants.ts
 export enum ProductCategory {
 	ELECTRONICS = 'ELECTRONICS',
 	CLOTHING = 'CLOTHING',
@@ -12,7 +11,6 @@ export enum ProductCategory {
 	AUTOMOTIVE = 'AUTOMOTIVE',
 }
 
-// Labels para mostrar en la UI
 export const CATEGORY_LABELS: Record<ProductCategory | 'ALL', string> = {
 	ALL: 'Todas las categorías',
 	[ProductCategory.ELECTRONICS]: 'Electrónicos',
@@ -27,10 +25,8 @@ export const CATEGORY_LABELS: Record<ProductCategory | 'ALL', string> = {
 	[ProductCategory.PET_SUPPLIES]: 'Mascotas',
 };
 
-// Array de todas las categorías
 export const PRODUCT_CATEGORIES = Object.values(ProductCategory);
 
-// Utility functions
 export const getAllCategories = () => {
 	return [
 		{ value: 'ALL', label: CATEGORY_LABELS.ALL },
@@ -56,7 +52,6 @@ export const getCategoryLabel = (category: ProductCategory | 'ALL'): string => {
 	return CATEGORY_LABELS[category] || category;
 };
 
-// Funciones de compatibilidad (mantienen la API anterior)
 export const getCategoryKey = (displayName: string): string => {
 	const entries = Object.entries(ProductCategory);
 	const found = entries.find(([_, value]) => value === displayName);

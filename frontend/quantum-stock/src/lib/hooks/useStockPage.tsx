@@ -8,238 +8,235 @@ import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 type ProductResponseDTO =
-    | {
-            content?: Product[];
-            page?: number;
-            size?: number;
-            totalElements?: number;
-            totalPages?: number;
-      }
-    | Product[];
+	| {
+			content?: Product[];
+			page?: number;
+			size?: number;
+			totalElements?: number;
+			totalPages?: number;
+	  }
+	| Product[];
 
 type UseStockPageParams = {
-    query?: string;
-    page?: number;
-    category?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    size?: number;
+	query?: string;
+	page?: number;
+	category?: string;
+	minPrice?: string;
+	maxPrice?: string;
+	size?: number;
 };
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 export function useStockPage(params?: UseStockPageParams) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { keycloak, initialized } = useKeycloak();
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [isAuthChecking, setIsAuthChecking] = useState(true);
-    const [userRole, setUserRole] = useState<'admin' | 'employee' | 'regular' | 'none'>('none');
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const {
-        isOpen: isEditOpen,
-        onOpen: onEditOpen,
-        onClose: onEditClose,
-    } = useDisclosure();
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const { keycloak, initialized } = useKeycloak();
+	const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+	const [isAuthChecking, setIsAuthChecking] = useState(true);
+	const [userRole, setUserRole] = useState<
+		'admin' | 'employee' | 'regular' | 'none'
+	>('none');
+	const { isOpen, onOpen, onClose } = useDisclosure();
+	const {
+		isOpen: isEditOpen,
+		onOpen: onEditOpen,
+		onClose: onEditClose,
+	} = useDisclosure();
 
-    const {
-        isOpen: isDeleteOpen,
-        onOpen: onDeleteOpen,
-        onClose: onDeleteClose,
-    } = useDisclosure();
+	const {
+		isOpen: isDeleteOpen,
+		onOpen: onDeleteOpen,
+		onClose: onDeleteClose,
+	} = useDisclosure();
 
-    const handleEditProduct = (product: Product) => {
-        // Only allow editing for admin or employee roles
-        if (userRole === 'admin' || userRole === 'employee') {
-            setSelectedProduct(product);
-            onEditOpen();
-        }
-    };
+	const handleEditProduct = (product: Product) => {
+		if (userRole === 'admin' || userRole === 'employee') {
+			setSelectedProduct(product);
+			onEditOpen();
+		}
+	};
 
-    const handleDeleteProduct = (product: Product) => {
-        // Only allow deletion for admin role
-        if (userRole === 'admin') {
-            setSelectedProduct(product);
-            onDeleteOpen();
-        }
-    };
+	const handleDeleteProduct = (product: Product) => {
+		if (userRole === 'admin') {
+			setSelectedProduct(product);
+			onDeleteOpen();
+		}
+	};
 
-    const handleUpdateProduct = (updateProduct: Product) => {
-        console.log('Update product:', updateProduct);
-        mutate();
-    };
+	const handleUpdateProduct = (updateProduct: Product) => {
+		console.log('Update product:', updateProduct);
+		mutate();
+	};
 
-    const handleDeleteProductConfirm = (productId: string) => {
-        console.log('Delete product with ID:', productId);
-        mutate();
-    };
+	const handleDeleteProductConfirm = (productId: string) => {
+		console.log('Delete product with ID:', productId);
+		mutate();
+	};
 
-    useEffect(() => {
-        if (!initialized) {
-            setIsAuthChecking(true);
-            return;
-        }
+	useEffect(() => {
+		if (!initialized) {
+			setIsAuthChecking(true);
+			return;
+		}
 
-        const checkAuthandPermissions = async () => {
-            try {
-                if (!keycloak.authenticated) {
-                    sessionStorage.setItem(
-                        'redirectAfterLogin',
-                        window.location.pathname,
-                    );
+		const checkAuthandPermissions = async () => {
+			try {
+				if (!keycloak.authenticated) {
+					sessionStorage.setItem(
+						'redirectAfterLogin',
+						window.location.pathname,
+					);
 
-                    keycloak.login({
-                        redirectUri: window.location.origin + EndpointEnum.Stock,
-                    });
-                    return;
-                }
+					keycloak.login({
+						redirectUri: window.location.origin + EndpointEnum.Stock,
+					});
+					return;
+				}
 
-                const roles =
-                    keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
-                
-                // Determine user role
-                if (roles.includes('admin')) {
-                    setUserRole('admin');
-                } else if (roles.includes('employee')) {
-                    setUserRole('employee');
-                } else {
-                    setUserRole('regular');
-                }
+				const roles =
+					keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
 
-                setIsAuthChecking(false);
-            } catch (error) {
-                console.error('Error checking authentication and permissions:', error);
-                setIsAuthChecking(false);
-            }
-        };
+				if (roles.includes('admin')) {
+					setUserRole('admin');
+				} else if (roles.includes('employee')) {
+					setUserRole('employee');
+				} else {
+					setUserRole('regular');
+				}
 
-        checkAuthandPermissions();
-    }, [initialized, keycloak, router]);
+				setIsAuthChecking(false);
+			} catch (error) {
+				console.error('Error checking authentication and permissions:', error);
+				setIsAuthChecking(false);
+			}
+		};
 
-    const shouldFetchProducts =
-        !isAuthChecking && initialized && keycloak.authenticated;
+		checkAuthandPermissions();
+	}, [initialized, keycloak]);
 
-    const query = params?.query ?? searchParams.get('query');
-    const category = params?.category ?? searchParams.get('category');
-    const page = params?.page ?? searchParams.get('page');
-    const minPrice = params?.minPrice ?? searchParams.get('minPrice');
-    const maxPrice = params?.maxPrice ?? searchParams.get('maxPrice');
-    const size = params?.size ?? 10;
+	const shouldFetchProducts =
+		!isAuthChecking && initialized && keycloak.authenticated;
 
-    const buildSearchParams = () => {
-        const urlParams = new URLSearchParams();
+	const query = params?.query ?? searchParams.get('query');
+	const category = params?.category ?? searchParams.get('category');
+	const page = params?.page ?? searchParams.get('page');
+	const minPrice = params?.minPrice ?? searchParams.get('minPrice');
+	const maxPrice = params?.maxPrice ?? searchParams.get('maxPrice');
+	const size = params?.size ?? 10;
 
-        if (query?.trim()) {
-            urlParams.append('name', query.trim());
-        }
+	const buildSearchParams = () => {
+		const urlParams = new URLSearchParams();
 
-        if (category && category !== 'all') {
-            urlParams.append('category', category);
-        }
+		if (query?.trim()) {
+			urlParams.append('name', query.trim());
+		}
 
-        if (minPrice?.trim()) {
-            urlParams.append('minPrice', minPrice.trim());
-        }
+		if (category && category !== 'all') {
+			urlParams.append('category', category);
+		}
 
-        if (maxPrice?.trim()) {
-            urlParams.append('maxPrice', maxPrice.trim());
-        }
+		if (minPrice?.trim()) {
+			urlParams.append('minPrice', minPrice.trim());
+		}
 
-        const pageNumber =
-            page && !Number.isNaN(Number(page)) ? Number(page) - 1 : 0;
-        urlParams.append('page', pageNumber.toString());
-        urlParams.append('size', size.toString());
+		if (maxPrice?.trim()) {
+			urlParams.append('maxPrice', maxPrice.trim());
+		}
 
-        urlParams.append('sort', 'id,asc');
+		const pageNumber =
+			page && !Number.isNaN(Number(page)) ? Number(page) - 1 : 0;
+		urlParams.append('page', pageNumber.toString());
+		urlParams.append('size', size.toString());
 
-        return urlParams.toString();
-    };
+		urlParams.append('sort', 'id,asc');
 
-    const swrKey = shouldFetchProducts
-        ? `${API_URL}/products/all?${buildSearchParams()}`
-        : null;
+		return urlParams.toString();
+	};
 
-    console.log('Generated SWR Key:', swrKey);
+	const swrKey = shouldFetchProducts
+		? `${API_URL}/products/all?${buildSearchParams()}`
+		: null;
 
-    const {
-        data: responseData,
-        error,
-        isLoading,
-        isValidating,
-        mutate,
-    } = useSWR<ProductResponseDTO>(swrKey, fetcher, {
-        dedupingInterval: 60000,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false,
-        revalidateIfStale: false,
-    });
+	console.log('Generated SWR Key:', swrKey);
 
-    const normalizeData = () => {
-        if (Array.isArray(responseData)) {
-            return {
-                products: responseData,
-                totalElements: responseData.length,
-                totalPages: 1,
-                currentPage: 0,
-            };
-        }
+	const {
+		data: responseData,
+		error,
+		isLoading,
+		isValidating,
+		mutate,
+	} = useSWR<ProductResponseDTO>(swrKey, fetcher, {
+		dedupingInterval: 60000,
+		revalidateOnFocus: false,
+		revalidateOnReconnect: false,
+		revalidateIfStale: false,
+	});
 
-        if (responseData && 'content' in responseData) {
-            return {
-                products: responseData.content ?? [],
-                totalElements: responseData.totalElements ?? 0,
-                totalPages: responseData.totalPages ?? 0,
-                currentPage: responseData.page ?? 0,
-            };
-        }
+	const normalizeData = () => {
+		if (Array.isArray(responseData)) {
+			return {
+				products: responseData,
+				totalElements: responseData.length,
+				totalPages: 1,
+				currentPage: 0,
+			};
+		}
 
-        return {
-            products: [],
-            totalElements: 0,
-            totalPages: 0,
-            currentPage: 0,
-        };
-    };
+		if (responseData && 'content' in responseData) {
+			return {
+				products: responseData.content ?? [],
+				totalElements: responseData.totalElements ?? 0,
+				totalPages: responseData.totalPages ?? 0,
+				currentPage: responseData.page ?? 0,
+			};
+		}
 
-    const { products, totalElements, totalPages, currentPage } = normalizeData();
+		return {
+			products: [],
+			totalElements: 0,
+			totalPages: 0,
+			currentPage: 0,
+		};
+	};
 
-    const refreshProducts = () => {
-        mutate();
-    };
+	const { products, totalElements, totalPages, currentPage } = normalizeData();
 
-    // Determine if the user has edit access
-    const hasEditAccess = userRole === 'admin' || userRole === 'employee';
-    
-    // Determine if the user has delete access
-    const hasDeleteAccess = userRole === 'admin';
+	const refreshProducts = () => {
+		mutate();
+	};
 
-    return {
-        selectedProduct,
-        setSelectedProduct,
-        handleEditProduct,
-        handleDeleteProduct,
-        handleUpdateProduct,
-        handleDeleteProductConfirm,
-        isOpen,
-        onOpen,
-        onClose,
-        isEditOpen,
-        onEditOpen,
-        onEditClose,
-        isDeleteOpen,
-        onDeleteOpen,
-        onDeleteClose,
-        products,
-        totalElements,
-        totalPages,
-        currentPage,
-        error,
-        isLoading,
-        isValidating,
-        isAuthChecking,
-        refreshProducts,
-        userRole,
-        hasEditAccess,
-        hasDeleteAccess,
-    };
+	const hasEditAccess = userRole === 'admin' || userRole === 'employee';
+
+	const hasDeleteAccess = userRole === 'admin';
+
+	return {
+		selectedProduct,
+		setSelectedProduct,
+		handleEditProduct,
+		handleDeleteProduct,
+		handleUpdateProduct,
+		handleDeleteProductConfirm,
+		isOpen,
+		onOpen,
+		onClose,
+		isEditOpen,
+		onEditOpen,
+		onEditClose,
+		isDeleteOpen,
+		onDeleteOpen,
+		onDeleteClose,
+		products,
+		totalElements,
+		totalPages,
+		currentPage,
+		error,
+		isLoading,
+		isValidating,
+		isAuthChecking,
+		refreshProducts,
+		userRole,
+		hasEditAccess,
+		hasDeleteAccess,
+	};
 }
