@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/products/all").permitAll()
+                        .requestMatchers("/api/v1/products/delete/**").hasRole("role_admin")
                         .requestMatchers("/actuator").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
