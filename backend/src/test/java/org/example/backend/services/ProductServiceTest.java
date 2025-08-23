@@ -286,21 +286,12 @@ public class ProductServiceTest {
 
     @Test
     void testDelete_WithExistingNotification_ShouldDeleteNotification() {
-        // Arrange
-        MinQuantityNotification existingNotification = MinQuantityNotification.builder()
-                .id(1L)
-                .product(product1)
-                .notificationDate(LocalDateTime.now())
-                .build();
-
         when(productRepository.findById(1L)).thenReturn(Optional.of(product1));
         when(productRepository.save(any(Product.class))).thenReturn(product1);
         doNothing().when(minQuantityNotificationService).deleteNotificationByProductId(1L);
 
-        // Act
         Product result = productService.delete(1L);
 
-        // Assert
         assertNotNull(result);
         verify(minQuantityNotificationService).deleteNotificationByProductId(1L);
     }
