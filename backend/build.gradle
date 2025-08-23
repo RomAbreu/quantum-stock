@@ -40,6 +40,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation("io.cucumber:cucumber-java:7.23.0")
     testImplementation("io.cucumber:cucumber-junit:7.23.0")
+    testImplementation 'com.h2database:h2'
+    testImplementation 'org.mockito:mockito-core:5.19.0'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

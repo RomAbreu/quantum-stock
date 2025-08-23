@@ -79,8 +79,7 @@ public class ProductService {
     }
 
     private void handleMinQuantityNotification(Product product, boolean isProductBeingDeleted) {
-        MinQuantityNotification existingNotification = minQuantityNotificationService.getNotificationById(product.getId());
-        if (existingNotification != null && isProductBeingDeleted) {
+        if (isProductBeingDeleted) {
             minQuantityNotificationService.deleteNotificationByProductId(product.getId());
             return;
         }
