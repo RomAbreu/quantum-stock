@@ -1,7 +1,7 @@
 'use client';
 
 import BreadcrumbsBuilder, {
-	type BreadCrumbNavigationItem,
+    type BreadCrumbNavigationItem,
 } from '@/components/breadcrumbsBuilder/BreadCrumbsBuilder';
 import StatsCards from '@/components/cards/StatsCard';
 import AddProductModal from '@/components/modals/AddProductModal';
@@ -13,9 +13,9 @@ import Pagination from '@/components/stock/Pagination';
 import ProductCardsView from '@/components/stock/ProductCardsView';
 import StockHeader from '@/components/stock/StockHeader';
 import {
-	EmptyStateView,
-	ErrorView,
-	LoadingView,
+    EmptyStateView,
+    ErrorView,
+    LoadingView,
 } from '@/components/stock/StockStatusViews';
 import StockTable from '@/components/tables/StockTable';
 import { useStockPage } from '@/lib/hooks/useStockPage';
@@ -24,201 +24,207 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
 const breadcrumbItems: BreadCrumbNavigationItem[] = [
-	{ name: 'Inicio', href: '/' },
-	{ name: 'Inventario', href: '/stock' },
+    { name: 'Inicio', href: '/' },
+    { name: 'Inventario', href: '/stock' },
 ];
 
 function StockPageContent() {
-	const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
-	const searchParams = useSearchParams();
+    const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+    const searchParams = useSearchParams();
 
-	const currentQuery = searchParams.get('query') ?? '';
-	const currentPage = Number(searchParams.get('page')) || 1;
-	const filterCategory = searchParams.get('category') ?? 'all';
-	const minPrice = searchParams.get('minPrice') ?? '';
-	const maxPrice = searchParams.get('maxPrice') ?? '';
+    const currentQuery = searchParams.get('query') ?? '';
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const filterCategory = searchParams.get('category') ?? 'all';
+    const minPrice = searchParams.get('minPrice') ?? '';
+    const maxPrice = searchParams.get('maxPrice') ?? '';
 
-	const PAGE_SIZE = 10;
+    const PAGE_SIZE = 10;
 
-	const [searchKey, setSearchKey] = useState(0);
+    const [searchKey, setSearchKey] = useState(0);
 
-	const {
-		products,
-		totalElements,
-		totalPages,
-		error,
-		isLoading,
-		isValidating,
-		isAuthChecking,
-		isOpen: isAddOpen,
-		onOpen: onAddOpen,
-		onClose: onAddClose,
-		isEditOpen,
-		onEditClose,
-		isDeleteOpen,
-		onDeleteClose,
-		handleEditProduct,
-		handleDeleteProduct,
-		handleUpdateProduct,
-		handleDeleteProductConfirm,
-		selectedProduct,
-		refreshProducts,
-	} = useStockPage({
-		query: currentQuery,
-		page: currentPage,
-		category: filterCategory !== 'all' ? filterCategory : undefined,
-		minPrice: minPrice || undefined,
-		maxPrice: maxPrice || undefined,
-		size: PAGE_SIZE,
-	});
+    const {
+        products,
+        totalElements,
+        totalPages,
+        error,
+        isLoading,
+        isValidating,
+        isAuthChecking,
+        isOpen: isAddOpen,
+        onOpen: onAddOpen,
+        onClose: onAddClose,
+        isEditOpen,
+        onEditClose,
+        isDeleteOpen,
+        onDeleteClose,
+        handleEditProduct,
+        handleDeleteProduct,
+        handleUpdateProduct,
+        handleDeleteProductConfirm,
+        selectedProduct,
+        refreshProducts,
+        hasEditAccess,
+    } = useStockPage({
+        query: currentQuery,
+        page: currentPage,
+        category: filterCategory !== 'all' ? filterCategory : undefined,
+        minPrice: minPrice || undefined,
+        maxPrice: maxPrice || undefined,
+        size: PAGE_SIZE,
+    });
 
-	const handleSaveProduct = async (newProduct: Product) => {
-		console.log('Product saved successfully:', newProduct);
-		refreshProducts();
-	};
+    const handleSaveProduct = async (newProduct: Product) => {
+        console.log('Product saved successfully:', newProduct);
+        refreshProducts();
+    };
 
-	const handleRefresh = () => {
-		refreshProducts();
-	};
+    const handleRefresh = () => {
+        refreshProducts();
+    };
 
-	const handleCategoryChange = (category: string) => {
-		const params = new URLSearchParams(searchParams.toString());
-		params.set('page', '1');
+    const handleCategoryChange = (category: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', '1');
 
-		if (category && category !== 'all') {
-			params.set('category', category);
-		} else {
-			params.delete('category');
-		}
+        if (category && category !== 'all') {
+            params.set('category', category);
+        } else {
+            params.delete('category');
+        }
 
-		window.history.pushState({}, '', `?${params.toString()}`);
-	};
+        window.history.pushState({}, '', `?${params.toString()}`);
+    };
 
-	const handlePageChange = (page: number) => {
-		const params = new URLSearchParams(searchParams.toString());
-		params.set('page', page.toString());
-		window.history.pushState({}, '', `?${params.toString()}`);
-	};
+    const handlePageChange = (page: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', page.toString());
+        window.history.pushState({}, '', `?${params.toString()}`);
+    };
 
-	if (isAuthChecking) {
-		return <LoadingView message="Verificando autenticación..." />;
-	}
+    if (isAuthChecking) {
+        return <LoadingView message="Verificando autenticación..." />;
+    }
 
-	const categories = Array.isArray(products)
-		? [...new Set(products.map((p) => p.category).filter(Boolean))]
-		: [];
+    const categories = Array.isArray(products)
+        ? [...new Set(products.map((p) => p.category).filter(Boolean))]
+        : [];
 
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background to-content1">
-			<StockHeader
-				onAddProduct={onAddOpen}
-				isLoading={isLoading || isValidating}
-			/>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-content1">
+            <StockHeader
+                onAddProduct={onAddOpen}
+                isLoading={isLoading || isValidating}
+                hasEditAccess={hasEditAccess}
+            />
 
-			<div className="container px-4 py-6 mx-auto">
-				<div className="mb-8 animate-fade-in-up">
-					<BreadcrumbsBuilder items={breadcrumbItems} />
-				</div>
+            <div className="container px-4 py-6 mx-auto">
+                <div className="mb-8 animate-fade-in-up">
+                    <BreadcrumbsBuilder items={breadcrumbItems} />
+                </div>
 
-				<div className="mb-8 animate-fade-in-up animation-delay-200">
-					<StatsCards stockItems={Array.isArray(products) ? products : []} />
-				</div>
+                <div className="mb-8 animate-fade-in-up animation-delay-200">
+                    <StatsCards stockItems={Array.isArray(products) ? products : []} />
+                </div>
 
-				<ControlPanel
-					filterCategory={filterCategory}
-					setFilterCategory={handleCategoryChange}
-					categories={categories}
-					viewMode={viewMode}
-					setViewMode={setViewMode}
-					onRefresh={handleRefresh}
-					isLoading={isLoading || isValidating}
-					filteredItemsCount={totalElements}
-				/>
+                <ControlPanel
+                    filterCategory={filterCategory}
+                    setFilterCategory={handleCategoryChange}
+                    categories={categories}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    onRefresh={handleRefresh}
+                    isLoading={isLoading || isValidating}
+                    filteredItemsCount={totalElements}
+                />
 
-				{error && (
-					<ErrorView error={error.message ?? 'Error al cargar los productos'} />
-				)}
+                {error && (
+                    <ErrorView error={error.message ?? 'Error al cargar los productos'} />
+                )}
 
-				{isLoading ? (
-					<LoadingView />
-				) : (
-					<div className="animate-fade-in-up animation-delay-400">
-						{Array.isArray(products) && products.length > 0 ? (
-							<>
-								{viewMode === 'table' ? (
-									<StockTable
-										stockItems={products}
-										onEdit={(product) => handleEditProduct(product)}
-										onDelete={(product) => handleDeleteProduct(product)}
-									/>
-								) : (
-									<ProductCardsView
-										items={products}
-										onEdit={(_, item) => handleEditProduct(item)}
-										onDelete={(id) => handleDeleteProduct({ id } as Product)}
-									/>
-								)}
+                {isLoading ? (
+                    <LoadingView />
+                ) : (
+                    <div className="animate-fade-in-up animation-delay-400">
+                        {Array.isArray(products) && products.length > 0 ? (
+                            <>
+                                {viewMode === 'table' ? (
+                                    <StockTable
+                                        stockItems={products}
+                                        onEdit={(product) => handleEditProduct(product)}
+                                        onDelete={(product) => handleDeleteProduct(product)}
+                                    />
+                                ) : (
+                                    <ProductCardsView
+                                        items={products}
+                                        onEdit={(_, item) => handleEditProduct(item)}
+                                        onDelete={(id) => handleDeleteProduct({ id } as Product)}
+                                    />
+                                )}
 
-								<Pagination
-									currentPage={currentPage}
-									totalPages={totalPages}
-									onPageChange={handlePageChange}
-									isLoading={isLoading || isValidating}
-									totalElements={totalElements}
-									pageSize={PAGE_SIZE}
-								/>
-							</>
-						) : (
-							<EmptyStateView onAddProduct={onAddOpen} />
-						)}
-					</div>
-				)}
-			</div>
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                    isLoading={isLoading || isValidating}
+                                    totalElements={totalElements}
+                                    pageSize={PAGE_SIZE}
+                                />
+                            </>
+                        ) : (
+                            <EmptyStateView onAddProduct={hasEditAccess ? onAddOpen : () => {}} />
+                        )}
+                    </div>
+                )}
+            </div>
 
-			<FloatingActionButton onPress={onAddOpen} isDisabled={isLoading} />
+            {hasEditAccess && (
+                <FloatingActionButton onPress={onAddOpen} isDisabled={isLoading} />
+            )}
 
-			<AddProductModal
-				isOpen={isAddOpen}
-				onClose={onAddClose}
-				onSave={handleSaveProduct}
-			/>
+            {hasEditAccess && (
+                <AddProductModal
+                    isOpen={isAddOpen}
+                    onClose={onAddClose}
+                    onSave={handleSaveProduct}
+                />
+            )}
 
-			{selectedProduct && (
-				<EditProductModal
-					isOpen={isEditOpen}
-					onClose={onEditClose}
-					product={{
-						id: selectedProduct.id,
-						name: selectedProduct.name,
-						description: selectedProduct.description,
-						category: selectedProduct.category,
-						price: selectedProduct.price,
-						quantity: selectedProduct.quantity,
-						minQuantity: selectedProduct.minQuantity ?? 0,
-					}}
-					onSave={async (product) => {
-						handleUpdateProduct(product as Product);
-					}}
-				/>
-			)}
+            {selectedProduct && hasEditAccess && (
+                <EditProductModal
+                    isOpen={isEditOpen}
+                    onClose={onEditClose}
+                    product={{
+                        id: selectedProduct.id,
+                        name: selectedProduct.name,
+                        description: selectedProduct.description,
+                        category: selectedProduct.category,
+                        price: selectedProduct.price,
+                        quantity: selectedProduct.quantity,
+                        minQuantity: selectedProduct.minQuantity ?? 0,
+                    }}
+                    onSave={async (product) => {
+                        handleUpdateProduct(product as Product);
+                    }}
+                />
+            )}
 
-			{selectedProduct && (
-				<DeleteProductModal
-					isOpen={isDeleteOpen}
-					onClose={onDeleteClose}
-					productId={selectedProduct.id}
-					productName={selectedProduct.name}
-					onDelete={handleDeleteProductConfirm}
-				/>
-			)}
-		</div>
-	);
+            {selectedProduct && hasEditAccess && (
+                <DeleteProductModal
+                    isOpen={isDeleteOpen}
+                    onClose={onDeleteClose}
+                    productId={selectedProduct.id}
+                    productName={selectedProduct.name}
+                    onDelete={handleDeleteProductConfirm}
+                />
+            )}
+        </div>
+    );
 }
 
 export default function StockPage() {
-	return (
-		<Suspense fallback={<LoadingView message="Cargando página de stock..." />}>
-			<StockPageContent />
-		</Suspense>
-	);
+    return (
+        <Suspense fallback={<LoadingView message="Cargando página de stock..." />}>
+            <StockPageContent />
+        </Suspense>
+    );
 }
