@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Regression Test Backend
+    runs-on: ubuntu-latest
+
+    services:
+      keycloak-service:
+        image: keycloak/keycloak:26.2
+        env:
+          KEYCLOAK_ADMIN: admin
+          KEYCLOAK_ADMIN_PASSWORD: admin
+          KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-export.json
+        ports:
+          - 9090:9090
+        options: >-
+          --mount type=bind,source=${{ github.workspace }}/keycloak-data,target=/opt/keycloak/data/import \
+          --health-cmd="curl -f http://localhost:9090/auth/realms/master" \
+          --health-interval=10s \
+          --health-timeout=5s \
+          --health-retries=3
+
+    env:
+      MYSQL_ROOT_PASSWORD: test_rootroot
+      MYSQL_DATABASE: test_inventory_db
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: test_12345678
+      MYSQL_TCP_PORT: 3307
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare Keycloak import
+        run: |
+          mkdir -p keycloak-data
+          cp backend/keycloak-realm-export.json keycloak-data/
+
+      - name: Wait for Keycloak
+        run: |
+          echo "Waiting for Keycloak to start and import realm..."
+          timeout 300 bash -c 'until curl -f http://localhost:9090/health/ready; do
+            echo "Still waiting..."
+            sleep 10
+            done'
+            echo "Keycloak is ready!"
+
+      - name: Setup MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.MYSQL_DATABASE }};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }} -P${{ env.MYSQL_TCP_PORT }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x backend/gradlew
+
+      - name: Build application
+        working-directory: ./backend
+        run: ./gradlew clean build -x test
+
+      - name: Run Unit Tests
+        working-directory: ./backend
+        run: ./gradlew cucumberTest
+
+      - name: Run Cucumber Tests
+        working-directory: ./backend
+        run: ./gradlew unitTest
+
+      - name: Upload JUnit test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: JUnit Test Reports
+          path: |
+            build/reports/tests/unitTest/index.html
+          retention-days: 30
+
+      - name: Upload Cucumber test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Cucumber Test Reports
+          path: |
+            build/reports/tests/cucumberTest/index.html
+            target/cucumber-reports.html
+          retention-days: 30
