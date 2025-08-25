@@ -57,6 +57,21 @@ services:
     profiles:
       - prod
 
+  frontend-service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:${SERVER_PORT:-8080}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    restart: always
+    depends_on:
+      - app-service
+    profiles:
+      - prod
+
   prometheus-service:
     image: prom/prometheus:latest
     ports:

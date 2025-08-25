@@ -1,19 +1,21 @@
+import { EndpointEnum } from '@/lib/constants/routes.constants';
 import type Product from '@/lib/model/product.model';
+import { fetcher } from '@/lib/swr/fetcher';
+import { useDisclosure } from '@heroui/react';
 import { useKeycloak } from '@react-keycloak/web';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { EndpointEnum } from '@/lib/constants/routes.constants';
 import useSWR from 'swr';
-import { fetcher } from '@/lib/swr/fetcher';
-import { useDisclosure } from '@heroui/react';
 
-type ProductResponseDTO = {
-    content?: Product[];
-    page?: number;
-    size?: number;
-    totalElements?: number;
-    totalPages?: number;
-} | Product[];
+type ProductResponseDTO =
+    | {
+            content?: Product[];
+            page?: number;
+            size?: number;
+            totalElements?: number;
+            totalPages?: number;
+      }
+    | Product[];
 
 type UseStockPageParams = {
     query?: string;
@@ -32,6 +34,9 @@ export function useStockPage(params?: UseStockPageParams) {
     const { keycloak, initialized } = useKeycloak();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isAuthChecking, setIsAuthChecking] = useState(true);
+    const [userRole, setUserRole] = useState<
+        'admin' | 'employee' | 'regular' | 'none'
+    >('none');
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {
         isOpen: isEditOpen,
@@ -46,13 +51,17 @@ export function useStockPage(params?: UseStockPageParams) {
     } = useDisclosure();
 
     const handleEditProduct = (product: Product) => {
-        setSelectedProduct(product);
-        onEditOpen();
+        if (userRole === 'admin' || userRole === 'employee') {
+            setSelectedProduct(product);
+            onEditOpen();
+        }
     };
 
     const handleDeleteProduct = (product: Product) => {
-        setSelectedProduct(product);
-        onDeleteOpen();
+        if (userRole === 'admin') {
+            setSelectedProduct(product);
+            onDeleteOpen();
+        }
     };
 
     const handleUpdateProduct = (updateProduct: Product) => {
@@ -74,23 +83,20 @@ export function useStockPage(params?: UseStockPageParams) {
         const checkAuthandPermissions = async () => {
             try {
                 if (!keycloak.authenticated) {
-                    sessionStorage.setItem(
-                        'redirectAfterLogin', 
-                        window.location.pathname,
-                    );
-
-                    keycloak.login({
-                        redirectUri: window.location.origin + EndpointEnum.Stock,
-                    });
+                    setUserRole('none');
+                    setIsAuthChecking(false);
                     return;
                 }
 
-                const roles = keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
-                const hasRequiredRole = roles.includes('admin') || roles.includes('employee');
+                const roles =
+                    keycloak.resourceAccess?.['quantum-stock-frontend']?.roles || [];
 
-                if (!hasRequiredRole) {
-                    router.push(EndpointEnum.Home);
-                    return;
+                if (roles.includes('admin')) {
+                    setUserRole('admin');
+                } else if (roles.includes('employee')) {
+                    setUserRole('employee');
+                } else {
+                    setUserRole('regular');
                 }
 
                 setIsAuthChecking(false);
@@ -101,9 +107,9 @@ export function useStockPage(params?: UseStockPageParams) {
         };
 
         checkAuthandPermissions();
-    }, [initialized, keycloak, router]);
+    }, [initialized, keycloak]);
 
-    const shouldFetchProducts = !isAuthChecking && initialized && keycloak.authenticated;
+    const shouldFetchProducts = !isAuthChecking && initialized;
 
     const query = params?.query ?? searchParams.get('query');
     const category = params?.category ?? searchParams.get('category');
@@ -114,36 +120,34 @@ export function useStockPage(params?: UseStockPageParams) {
 
     const buildSearchParams = () => {
         const urlParams = new URLSearchParams();
-        
+
         if (query?.trim()) {
-            // Cambia 'name' por el campo que uses en tu ProductFilter
-            // Si tu backend espera 'name', usa 'name'
-            // Si tu backend espera 'search', usa 'search'
             urlParams.append('name', query.trim());
         }
-        
+
         if (category && category !== 'all') {
             urlParams.append('category', category);
         }
-        
+
         if (minPrice?.trim()) {
             urlParams.append('minPrice', minPrice.trim());
         }
-        
+
         if (maxPrice?.trim()) {
             urlParams.append('maxPrice', maxPrice.trim());
         }
-        
-        const pageNumber = page && !Number.isNaN(Number(page)) ? Number(page) - 1 : 0;
+
+        const pageNumber =
+            page && !Number.isNaN(Number(page)) ? Number(page) - 1 : 0;
         urlParams.append('page', pageNumber.toString());
         urlParams.append('size', size.toString());
-        
+
         urlParams.append('sort', 'id,asc');
-        
+
         return urlParams.toString();
     };
 
-    const swrKey = shouldFetchProducts 
+    const swrKey = shouldFetchProducts
         ? `${API_URL}/products/all?${buildSearchParams()}`
         : null;
 
@@ -155,16 +159,12 @@ export function useStockPage(params?: UseStockPageParams) {
         isLoading,
         isValidating,
         mutate,
-    } = useSWR<ProductResponseDTO>(
-        swrKey,
-        fetcher,
-        {
-            dedupingInterval: 60000,
-            revalidateOnFocus: false,
-            revalidateOnReconnect: false,
-            revalidateIfStale: false,
-        },
-    );
+    } = useSWR<ProductResponseDTO>(swrKey, fetcher, {
+        dedupingInterval: 60000,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        revalidateIfStale: false,
+    });
 
     const normalizeData = () => {
         if (Array.isArray(responseData)) {
@@ -172,24 +172,24 @@ export function useStockPage(params?: UseStockPageParams) {
                 products: responseData,
                 totalElements: responseData.length,
                 totalPages: 1,
-                currentPage: 0
+                currentPage: 0,
             };
         }
-        
+
         if (responseData && 'content' in responseData) {
             return {
                 products: responseData.content ?? [],
                 totalElements: responseData.totalElements ?? 0,
                 totalPages: responseData.totalPages ?? 0,
-                currentPage: responseData.page ?? 0
+                currentPage: responseData.page ?? 0,
             };
         }
-        
+
         return {
             products: [],
             totalElements: 0,
             totalPages: 0,
-            currentPage: 0
+            currentPage: 0,
         };
     };
 
@@ -198,6 +198,10 @@ export function useStockPage(params?: UseStockPageParams) {
     const refreshProducts = () => {
         mutate();
     };
+
+    const hasEditAccess = userRole === 'admin' || userRole === 'employee';
+    const hasDeleteAccess = userRole === 'admin';
+    const isAuthenticated = keycloak.authenticated;
 
     return {
         selectedProduct,
@@ -224,5 +228,9 @@ export function useStockPage(params?: UseStockPageParams) {
         isValidating,
         isAuthChecking,
         refreshProducts,
+        userRole,
+        hasEditAccess,
+        hasDeleteAccess,
+        isAuthenticated,
     };
 }

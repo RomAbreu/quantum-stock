@@ -11,77 +11,72 @@ import useProductForm from '@/lib/hooks/useProductForm';
 import type Product from '@/lib/model/product.model';
 
 export default function AddProductForm({
-  onSave,
-  onCancel,
-  isLoading = false,
-  onChange,
+	onSave,
+	onCancel,
+	isLoading = false,
+	onChange,
 }: Readonly<{
-  onSave?: (product: Product) => Promise<void>;
-  onCancel: () => void;
-  isLoading?: boolean;
-  onChange?: () => void;
+	onSave?: (product: Product) => Promise<void>;
+	onCancel: () => void;
+	isLoading?: boolean;
+	onChange?: () => void;
 }>) {
-  const { keycloak } = useKeycloak();
-  const token = keycloak?.token ?? '';
+	const { keycloak } = useKeycloak();
+	const token = keycloak?.token ?? '';
 
-  const {
-    formData,
-    errors,
-    isFormValid,
-    isSubmitting,
-    updateField,
-    handleCancel,
-    submitForm,
-  } = useProductForm({
-    mode: 'create',
-    onSuccess: async (product) => {
-      if (onSave) await onSave(product);
-    },
-    onError: (error) => console.error('Error creating product:', error),
-    onCancel,
-    onChange,
-    token,
-  });
+	const {
+		formData,
+		errors,
+		isFormValid,
+		isSubmitting,
+		updateField,
+		handleCancel,
+		submitForm,
+	} = useProductForm({
+		mode: 'create',
+		onSuccess: (product) => {
+			if (onSave) onSave(product);
+		},
+		onError: (error) => console.error('Error creating product:', error),
+		onCancel,
+		onChange,
+		token,
+	});
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await submitForm();
-  };
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		await submitForm();
+	};
 
-  // Determine if fields should be disabled
-  const isDisabled = isLoading || isSubmitting;
+	const isDisabled = isLoading || isSubmitting;
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Form error display */}
-      <FormErrorDisplay error={errors.form} />
+	return (
+		<form onSubmit={handleSubmit} className="space-y-6">
+			<FormErrorDisplay error={errors.form} />
 
-      {/* Basic Information */}
-      <BasicInformationSection
-        formData={formData}
-        errors={errors}
-        updateField={updateField}
-        isDisabled={isDisabled}
-      />
+			<BasicInformationSection
+				formData={formData}
+				errors={errors}
+				updateField={updateField}
+				isDisabled={isDisabled}
+			/>
 
-      <Divider />
+			<Divider />
 
-      {/* Pricing and Stock */}
-      <PricingAndStockSection
-        formData={formData}
-        errors={errors}
-        updateField={updateField}
-        isDisabled={isDisabled}
-      />
+			<PricingAndStockSection
+				formData={formData}
+				errors={errors}
+				updateField={updateField}
+				isDisabled={isDisabled}
+			/>
 
-      {/* Form Actions */}
-      <FormActions
-        onCancel={handleCancel}
-        isLoading={isLoading}
-        submitting={isSubmitting}
-        isPending={false}
-        isFormValid={isFormValid}
-      />
-    </form>
-  );
+			<FormActions
+				onCancel={handleCancel}
+				isLoading={isLoading}
+				submitting={isSubmitting}
+				isPending={false}
+				isFormValid={isFormValid}
+			/>
+		</form>
+	);
 }

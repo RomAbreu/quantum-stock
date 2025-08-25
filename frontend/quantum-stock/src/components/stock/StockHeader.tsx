@@ -6,11 +6,13 @@ import { Icon } from '@iconify/react';
 type StockHeaderProps = {
 	onAddProduct: () => void;
 	isLoading: boolean;
+	hasEditAccess?: boolean;
 };
 
 export default function StockHeader({
 	onAddProduct,
 	isLoading,
+	hasEditAccess = false,
 }: Readonly<StockHeaderProps>) {
 	return (
 		<div className="sticky top-0 z-10">
@@ -30,16 +32,19 @@ export default function StockHeader({
 								</p>
 							</div>
 						</div>
-						<Button
-							color="primary"
-							size="lg"
-							className="transition-all duration-300 shadow-lg bg-[#014CA5] hover:shadow-xl"
-							startContent={<Icon icon="lucide:plus" />}
-							onPress={onAddProduct}
-							isDisabled={isLoading}
-						>
-							Nuevo Artículo
-						</Button>
+
+						{hasEditAccess && (
+							<Button
+								color="primary"
+								size="lg"
+								className="transition-all duration-300 shadow-lg bg-[#014CA5] hover:shadow-xl"
+								startContent={<Icon icon="lucide:plus" />}
+								onPress={onAddProduct}
+								isDisabled={isLoading}
+							>
+								Nuevo Artículo
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>

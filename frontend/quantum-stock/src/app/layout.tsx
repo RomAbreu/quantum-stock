@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import MiniGridBackground from '@/components/backgrounds/MiniGridBackground';
 import Footer from '@/components/navigation/footer/Footer';
 import Navbar from '@/components/navigation/navbar/Navbar';
+import { Toaster } from 'react-hot-toast';
 import { Providers } from './providers';
 
 const onest = Onest({
@@ -35,6 +36,32 @@ export default async function RootLayout({
 						{children}
 					</main>
 					<Footer />
+					<Toaster
+						position="top-right"
+						toastOptions={{
+							duration: 4000,
+							style: {
+								background: 'white',
+								color: 'black',
+								border: '1px solid #e5e5e5',
+								borderRadius: '8px',
+								fontSize: '14px',
+								maxWidth: '500px',
+							},
+							success: {
+								style: {
+									border: '1px solid #10b981',
+									color: '#10b981',
+								},
+							},
+							error: {
+								style: {
+									border: '1px solid #ef4444',
+									color: '#ef4444',
+								},
+							},
+						}}
+					/>
 				</Providers>
 			</body>
 		</html>
