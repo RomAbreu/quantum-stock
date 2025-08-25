@@ -20,7 +20,7 @@ jobs:
           MYSQL_DATABASE: test_inventory_db
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_12345678
-          MYSQL_ROOT_PASSWORD: test_rootroot 
+          MYSQL_ROOT_PASSWORD: test_rootroot
           MYSQL_TCP_PORT: 3307
         options: >-
           --health-cmd="mysqladmin ping --silent"
@@ -60,15 +60,16 @@ jobs:
         working-directory: ./backend
         run: ./gradlew clean build -x test
 
-      - name: Run Unit Tests
+      - name: Run Cucumber Tests
         working-directory: ./backend
         run: ./gradlew cucumberTest
 
-      - name: Run Cucumber Tests
+      - name: Run Unit Tests
         working-directory: ./backend
         run: ./gradlew unitTest
 
       - name: Upload JUnit test reports
+        working-directory: ./backend
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,6 +79,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Cucumber test reports
+        working-directory: ./backend
         uses: actions/upload-artifact@v4
         if: always()
         with:
