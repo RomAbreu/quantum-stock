@@ -38,6 +38,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Ensure keycloak-data directory exists and populate it
       - name: Prepare Keycloak import
         run: |
           mkdir -p keycloak-data
@@ -50,7 +51,7 @@ jobs:
             echo "Still waiting..."
             sleep 10
             done'
-            echo "Keycloak is ready!"
+          echo "Keycloak is ready!"
 
       - name: Setup MySQL
         run: |
