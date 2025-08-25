@@ -23,7 +23,7 @@ jobs:
         volumes:
           - ./backend/keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
         options: >-
-          --entrypoint "kc.sh start-dev --http-port 9090 --import-realm"
+          --entrypoint "start-dev --http-port 9090 --import-realm"
           --health-cmd="curl -f http://localhost:9090/auth/realms/master"
           --health-interval=10s
           --health-timeout=5s
