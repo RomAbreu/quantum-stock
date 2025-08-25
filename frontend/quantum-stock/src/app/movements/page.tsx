@@ -13,7 +13,7 @@ import {
     TableRow,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import Pagination from '@/components/stock/Pagination';
 
 const movementColumns = [
@@ -24,7 +24,7 @@ const movementColumns = [
     { name: 'Fecha', uid: 'date' },
 ];
 
-export default function MovementsPage() {
+function MovementContent() {
     const {
         movements,
         totalElements,
@@ -182,5 +182,13 @@ export default function MovementsPage() {
                 />
             </div>
         </div>
+    );
+}
+
+export default function MovementPage() {
+    return (
+        <Suspense fallback={<div>Cargando movimientos...</div>}>
+            <MovementContent />
+        </Suspense>
     );
 }

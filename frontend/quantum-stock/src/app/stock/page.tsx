@@ -223,7 +223,7 @@ function StockPageContent() {
 
 export default function StockPage() {
     return (
-        <Suspense fallback={<LoadingView message="Cargando página de stock..." />}>
+        <Suspense fallback={<div>Cargando productos...</div>}>
             <StockPageContent />
         </Suspense>
     );
