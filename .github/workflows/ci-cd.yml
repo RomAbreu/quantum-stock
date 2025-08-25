@@ -20,8 +20,9 @@ jobs:
           KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-export.json
         ports:
           - 9090:9090
+        volumes:
+          - ./backend/keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
         options: >-
-          --mount type=bind,source=${{ github.workspace }}/keycloak-data,target=/opt/keycloak/data/import
           --health-cmd="curl -f http://localhost:9090/auth/realms/master"
           --health-interval=10s
           --health-timeout=5s
@@ -37,12 +38,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # Ensure keycloak-data directory exists and populate it
-      - name: Prepare Keycloak import
-        run: |
-          mkdir -p keycloak-data
-          cp backend/keycloak-realm-export.json keycloak-data/
 
       - name: Wait for Keycloak
         run: |
