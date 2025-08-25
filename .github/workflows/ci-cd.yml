@@ -69,22 +69,20 @@ jobs:
         run: ./gradlew unitTest
 
       - name: Upload JUnit test reports
-        working-directory: ./backend
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: JUnit Test Reports
           path: |
-            build/reports/tests/unitTest/index.html
+            /backend/build/reports/tests/unitTest/index.html
           retention-days: 30
 
       - name: Upload Cucumber test reports
-        working-directory: ./backend
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Cucumber Test Reports
           path: |
-            build/reports/tests/cucumberTest/index.html
-            target/cucumber-reports.html
+            backend/build/reports/tests/cucumberTest/index.html
+            backend/target/cucumber-reports.html
           retention-days: 30
