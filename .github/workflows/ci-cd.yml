@@ -21,7 +21,7 @@ jobs:
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_12345678
           MYSQL_ROOT_PASSWORD: test_rootroot 
-          MYSQL_TCP_PORT=: 3307
+          MYSQL_TCP_PORT: 3307
         options: >-
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
@@ -35,10 +35,12 @@ jobs:
         env:
           KEYCLOAK_ADMIN: admin
           KEYCLOAK_ADMIN_PASSWORD: admin
+          KC_HEALTH_ENABLED: true
         options: >-
-          --health-cmd "CMD-SHELL exec 3<>/dev/tcp/127.0.0.1/9090;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"
+          --health-cmd="curl -f http://localhost:9090/health/ready || exit 1"
           --health-interval=10s
-          --health-retries=5
+          --health-timeout=5s
+          --health-retries=10
 
     steps:
       - name: Checkout code
