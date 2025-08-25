@@ -21,10 +21,10 @@ jobs:
         ports:
           - 9090:9090
         options: >-
-          --mount type=bind,source=${{ github.workspace }}/keycloak-data,target=/opt/keycloak/data/import \
-          --health-cmd="curl -f http://localhost:9090/auth/realms/master" \
-          --health-interval=10s \
-          --health-timeout=5s \
+          --mount type=bind,source=${{ github.workspace }}/keycloak-data,target=/opt/keycloak/data/import
+          --health-cmd="curl -f http://localhost:9090/auth/realms/master"
+          --health-interval=10s
+          --health-timeout=5s
           --health-retries=3
 
     env:
