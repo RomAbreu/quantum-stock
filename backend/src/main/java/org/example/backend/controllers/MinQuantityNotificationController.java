@@ -1,6 +1,8 @@
 package org.example.backend.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.example.backend.dtos.MinQuantityNotificationResponse;
 import org.example.backend.models.MinQuantityNotification;
 import org.example.backend.services.MinQuantityNotificationService;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,16 @@ import java.util.List;
 @AllArgsConstructor
 public class MinQuantityNotificationController {
     private final MinQuantityNotificationService minQuantityNotificationService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping
-    public ResponseEntity<List<MinQuantityNotification>> getAllNotifications() {
+    public ResponseEntity<List<MinQuantityNotificationResponse>> getAllNotifications() {
         List<MinQuantityNotification> notifications = minQuantityNotificationService.getAllNotifications();
-        return ResponseEntity.ok(notifications);
+
+        List<MinQuantityNotificationResponse> notificationResponses = notifications.stream()
+                .map(notification -> objectMapper.convertValue(notification, MinQuantityNotificationResponse.class))
+                .toList();
+
+        return ResponseEntity.ok(notificationResponses);
     }
 }

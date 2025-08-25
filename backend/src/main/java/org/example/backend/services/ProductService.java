@@ -38,7 +38,7 @@ public class ProductService {
     public Product update(Long id, Product newProduct, String user) {
         Product oldProduct = productRepository.findById(id).orElse(null);
 
-        if (oldProduct == null)
+        if (oldProduct == null || !oldProduct.isActive())
             return null;
 
         int previousQuantity = oldProduct.getQuantity();
@@ -59,7 +59,7 @@ public class ProductService {
     public Product delete(Long id) {
         Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null)
+        if (product == null || !product.isActive())
             return null;
 
         product.setActive(false);
@@ -79,8 +79,7 @@ public class ProductService {
     }
 
     private void handleMinQuantityNotification(Product product, boolean isProductBeingDeleted) {
-        MinQuantityNotification existingNotification = minQuantityNotificationService.getNotificationById(product.getId());
-        if (existingNotification != null && isProductBeingDeleted) {
+        if (isProductBeingDeleted) {
             minQuantityNotificationService.deleteNotificationByProductId(product.getId());
             return;
         }
