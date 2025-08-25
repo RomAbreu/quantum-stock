@@ -40,15 +40,37 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation("io.cucumber:cucumber-java:7.23.0")
     testImplementation("io.cucumber:cucumber-junit:7.23.0")
-    testImplementation 'com.h2database:h2'
     testImplementation 'org.mockito:mockito-core:5.19.0'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.platform:junit-platform-suite-api:1.10.0'
+    testImplementation 'org.junit.platform:junit-platform-suite-engine:1.10.0'
 
     // https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
     implementation 'org.keycloak:keycloak-admin-client:26.0.5'
 }
 
-tasks.named('test') {
+test {
+    useJUnit()
+    include '**/CucumberTest*'
+}
+
+tasks.register('cucumberTest', Test) {
+    useJUnit()
+    include '**/CucumberTest*'
+    exclude '**/*ServiceTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+tasks.register('unitTest', Test) {
     useJUnitPlatform()
+    include '**/*ServiceTest*'
+    exclude '**/CucumberTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

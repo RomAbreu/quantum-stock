@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MinQuantityNotificationServiceTest {
+public class MinQuantityNotificationServiceTest {
 
     @Mock
     private MinQuantityNotificationRepository minQuantityNotificationRepository;
