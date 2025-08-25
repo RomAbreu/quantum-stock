@@ -11,23 +11,6 @@ jobs:
     name: Regression Test Backend
     runs-on: ubuntu-latest
 
-    services:
-      keycloak-service:
-        image: keycloak/keycloak:26.2
-        env:
-          KEYCLOAK_ADMIN: admin
-          KEYCLOAK_ADMIN_PASSWORD: admin
-          KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-export.json
-        ports:
-          - 9090:9090
-        volumes:
-          - ./backend/keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
-        options: >-
-          --health-cmd="curl -f http://localhost:9090/auth/realms/master"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     env:
       MYSQL_ROOT_PASSWORD: test_rootroot
       MYSQL_DATABASE: test_inventory_db
@@ -39,14 +22,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Wait for Keycloak
-        run: |
-          echo "Waiting for Keycloak to start and import realm..."
-          timeout 300 bash -c 'until curl -f http://localhost:9090/health/ready; do
-            echo "Still waiting..."
-            sleep 10
-            done'
-          echo "Keycloak is ready!"
+      - name: Start containers
+        run: docker compose -f "./backend/docker-compose.yml" --profile test up -d
 
       - name: Setup MySQL
         run: |
@@ -92,3 +69,7 @@ jobs:
             build/reports/tests/cucumberTest/index.html
             target/cucumber-reports.html
           retention-days: 30
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "./backend/docker-compose.yml" down
