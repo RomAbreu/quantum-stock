@@ -36,21 +36,13 @@ jobs:
           KEYCLOAK_ADMIN: admin
           KEYCLOAK_ADMIN_PASSWORD: admin
         options: >-
-          --health-cmd "curl -f http://localhost:9090/health"
+          --health-cmd "CMD-SHELL exec 3<>/dev/tcp/127.0.0.1/9090;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"
           --health-interval=10s
           --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Wait for Keycloak to be ready
-        run: |
-          until curl -f http://localhost:9090/health; do
-            echo "Waiting for Keycloak to be ready..."
-            sleep 5
-          done
-          echo "Keycloak is ready!"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
