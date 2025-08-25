@@ -32,12 +32,13 @@ jobs:
         image: romabreu/keycloak-setup:latest
         ports:
           - 9090:9090
+          - 9000:9000
         env:
           KEYCLOAK_ADMIN: admin
           KEYCLOAK_ADMIN_PASSWORD: admin
           KC_HEALTH_ENABLED: true
         options: >-
-          --health-cmd="curl -f http://localhost:9090/health/ready || exit 1"
+          --health-cmd="curl --head -fsS http://localhost:9000/health/ready"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
