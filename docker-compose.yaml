@@ -59,9 +59,7 @@ services:
     command: [ "start-dev", "--http-port", "${KEYCLOAK_PORT:-9090}", "--import-realm" ]
 
   app-service:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: stevenmr22/quantum-stock-backend:latest
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - SERVER_PORT=${SERVER_PORT:-8080}
@@ -78,9 +76,7 @@ services:
       - prod
 
   frontend-service:
-    build:
-      context: ./frontend/quantum-stock
-      dockerfile: Dockerfile
+    image: stevenmr22/quantum-stock-frontend:latest
     env_file:
         - ./frontend/quantum-stock/.env
     ports:
