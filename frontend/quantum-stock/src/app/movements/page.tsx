@@ -13,7 +13,8 @@ import {
     TableRow,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import React, { Suspense, useCallback, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense, useCallback } from 'react';
 import Pagination from '@/components/stock/Pagination';
 
 const movementColumns = [
@@ -25,31 +26,24 @@ const movementColumns = [
 ];
 
 function MovementContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
     const {
         movements,
         totalElements,
+        totalPages,
+        currentPage,
+        pageSize,
         refreshMovements,
+        isLoading,
     } = usePaginatedInventoryMovements();
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [visibleMovements, setVisibleMovements] = useState<InventoryMovement[]>(
-        [],
-    );
-
-    const pageSize = 10;
-    const totalPages = Math.ceil(totalElements / pageSize);
-
-    useEffect(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = currentPage * pageSize;
-
-        const newVisibleMovements = movements.slice(startIndex, endIndex);
-        if (
-            JSON.stringify(newVisibleMovements) !== JSON.stringify(visibleMovements)
-        ) {
-            setVisibleMovements(newVisibleMovements);
-        }
-    }, [movements, currentPage, pageSize, visibleMovements]);
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', newPage.toString());
+        router.push(`/movements?${params.toString()}`);
+    };
 
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
@@ -134,6 +128,7 @@ function MovementContent() {
                                 <Icon icon="lucide:refresh-cw" className="w-4 h-4" />
                             }
                             onPress={() => refreshMovements()}
+                            isLoading={isLoading}
                         >
                             Actualizar Datos
                         </Button>
@@ -152,8 +147,10 @@ function MovementContent() {
                             )}
                         </TableHeader>
                         <TableBody
-                            items={visibleMovements}
+                            items={movements}
                             emptyContent="No hay movimientos para mostrar"
+                            loadingContent="Cargando movimientos..."
+                            loadingState={isLoading ? 'loading' : 'idle'}
                         >
                             {(movement) => (
                                 <TableRow key={movement.id}>
@@ -173,13 +170,16 @@ function MovementContent() {
                     </Table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    totalElements={totalElements}
-                    pageSize={pageSize}
-                />
+                {totalPages > 1 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        totalElements={totalElements}
+                        pageSize={pageSize}
+                        isLoading={isLoading}
+                    />
+                )}
             </div>
         </div>
     );

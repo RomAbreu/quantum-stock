@@ -273,13 +273,60 @@ export default function Navbar(props: Readonly<NavbarProps>) {
                                         </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu
-											aria-label="Notificaciones"
-											className="p-2 overflow-y-auto text-gray-200 border-none rounded-lg shadow-xl w-80 bg-gray-900/95 backdrop-blur-md max-h-96"
-											itemClasses={{
-												base: 'rounded-md hover:bg-gray-700/50 transition-colors duration-200 data-[hover=true]:bg-gray-700/50 p-3',
-												title: 'text-sm font-medium',
-												description: 'text-xs text-gray-400 mt-1',
-											}} children={null}                                    >
+                                        aria-label="Notificaciones"
+                                        className="p-2 overflow-y-auto text-gray-200 border-none rounded-lg shadow-xl w-80 bg-gray-900/95 backdrop-blur-md max-h-96"
+                                        itemClasses={{
+                                            base: 'rounded-md hover:bg-gray-700/50 transition-colors duration-200 data-[hover=true]:bg-gray-700/50 p-3',
+                                            title: 'text-sm font-medium',
+                                            description: 'text-xs text-gray-400 mt-1',
+                                        }}
+                                    >
+                                        {processedNotifications.length === 0 ? (
+                                            <DropdownItem
+                                                key="no-notifications"
+                                                className="text-center cursor-default"
+                                                textValue="Sin notificaciones"
+                                            >
+                                                <div className="flex flex-col items-center gap-2 py-4">
+                                                    <Icon
+                                                        icon="solar:bell-off-bold"
+                                                        className="text-2xl text-gray-400"
+                                                    />
+                                                    <span className="text-sm text-gray-400">
+                                                        No hay notificaciones
+                                                    </span>
+                                                </div>
+                                            </DropdownItem>
+                                        ) : (
+                                            processedNotifications.map((notification) => (
+                                                <DropdownItem
+                                                    key={notification.id}
+                                                    textValue={notification.title}
+                                                    startContent={
+                                                        <div className={`flex items-center justify-center w-8 h-8 rounded-full bg-${notification.color}-500/20`}>
+                                                            <Icon
+                                                                icon={notification.icon}
+                                                                className={`text-sm text-${notification.color}-400`}
+                                                            />
+                                                        </div>
+                                                    }
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-start justify-between">
+                                                            <span className="text-sm font-semibold text-white">
+                                                                {notification.title}
+                                                            </span>
+                                                            <span className="ml-2 text-xs text-gray-500">
+                                                                {notification.time}
+                                                            </span>
+                                                        </div>
+                                                        <span className="mt-1 text-xs text-gray-300">
+                                                            {notification.message}
+                                                        </span>
+                                                    </div>
+                                                </DropdownItem>
+                                            ))
+                                        )}
                                     </DropdownMenu>
                                 </Dropdown>
                             </NavbarItem>

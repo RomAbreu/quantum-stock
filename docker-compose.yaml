@@ -1,0 +1,128 @@
+services:
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=smmr0001@ce.pucmm.edu.do"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    labels:
+      - "traefik.enable=true"
+    restart: always
+
+  inventory-db-service:
+    image: mysql:latest
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${MYSQL_PORT}
+    volumes:
+      - ${VOLUME_PATH}:/var/lib/mysql
+
+  test-db-service:
+    image: mysql:latest
+    ports:
+      - "${TEST_MYSQL_PORT}:${TEST_MYSQL_PORT}"
+    environment:
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+      - MYSQL_USER=${TEST_MYSQL_USER}
+      - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${TEST_MYSQL_PORT}
+    profiles:
+      - test
+
+  keycloak-service:
+    image: keycloak/keycloak:26.2
+    ports:
+        - "${KEYCLOAK_PORT}:${KEYCLOAK_PORT}"
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/keycloak-realm-export.json
+    volumes:
+      - ${KEYCLOAK_VOLUME_PATH}:/opt/keycloak/data
+      - ./backend/keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
+    command: [ "start-dev", "--http-port", "${KEYCLOAK_PORT:-9090}", "--import-realm" ]
+
+  app-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SERVER_PORT=${SERVER_PORT:-8080}
+      - DATABASE_USER=${MYSQL_USER}
+      - DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - KEYCLOAK_HOST=${KEYCLOAK_HOST}
+      - KEYCLOAK_PORT=${KEYCLOAK_PORT}
+    ports:
+      - ${SERVER_PORT:-8080}:${SERVER_PORT:-8080}
+    restart: always
+    depends_on:
+      - inventory-db-service
+    profiles:
+      - prod
+
+  frontend-service:
+    build:
+      context: ./frontend/quantum-stock
+      dockerfile: Dockerfile
+    env_file:
+        - ./frontend/quantum-stock/.env
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`quantum-stock.rabreus.tech`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+    restart: always
+    depends_on:
+      - app-service
+      - traefik
+    profiles:
+      - prod
+
+  prometheus-service:
+    image: prom/prometheus:latest
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    volumes:
+      - ./backend/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command: [ "--config.file=/etc/prometheus/prometheus.yml" ]
+
+  grafana-service:
+    image: grafana/grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - ./backend/grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus-service
+
+volumes:
+  prometheus_data:
+  grafana_data:

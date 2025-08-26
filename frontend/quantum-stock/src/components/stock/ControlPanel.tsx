@@ -98,28 +98,6 @@ export default function ControlPanel({
 							>
 								<Icon icon="lucide:refresh-cw" />
 							</Button>
-							<div className="flex gap-1 p-1 rounded-lg bg-default-100">
-								<Button
-									isIconOnly
-									size="sm"
-									variant={viewMode === 'table' ? 'solid' : 'light'}
-									color={viewMode === 'table' ? 'primary' : 'default'}
-									onPress={() => setViewMode('table')}
-									title="Vista de tabla"
-								>
-									<Icon icon="lucide:table" />
-								</Button>
-								<Button
-									isIconOnly
-									size="sm"
-									variant={viewMode === 'cards' ? 'solid' : 'light'}
-									color={viewMode === 'cards' ? 'primary' : 'default'}
-									onPress={() => setViewMode('cards')}
-									title="Vista de tarjetas"
-								>
-									<Icon icon="lucide:grid-3x3" />
-								</Button>
-							</div>
 						</div>
 					</div>
 				</div>
