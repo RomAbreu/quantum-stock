@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "AUTH_SESSION_ID",
+      "value": "NDA3M2RiMmYtNGVjOC00MTQxLWJjZTktODM3Mjc4Y2VmM2VkLmJMRk12UTlpT1NrVXJPUDZYcXhNNU9UYm1NMVdlMWx6NGhxQlJDZGY3YWVuSlhKc2pMZ3F0ZzhhWFhEQWpKd0dONXAtNWw3QVdLMlRyaU1RckZlWFN3",
+      "domain": "localhost",
+      "path": "/realms/quantum-stock/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "KC_AUTH_SESSION_HASH",
+      "value": "bbw7hR3IZSmwNo9TepwtagJwegrXrJ+qHhMWSUMPUjg",
+      "domain": "localhost",
+      "path": "/realms/quantum-stock/",
+      "expires": 1756172966.803962,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "KEYCLOAK_SESSION",
+      "value": "bbw7hR3IZSmwNo9TepwtagJwegrXrJ-qHhMWSUMPUjg",
+      "domain": "localhost",
+      "path": "/realms/quantum-stock/",
+      "expires": 1756208906.804039,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "KEYCLOAK_IDENTITY",
+      "value": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI2MTU4MWQyNC03ZTEyLTQ2ODYtOTU4NS01N2VkNTMzNzkwMzAifQ.eyJleHAiOjE3NTYyMDg5MDYsImlhdCI6MTc1NjE3MjkwNiwianRpIjoiNjJmOGZhNjktMmYwMi00OWZiLTgxY2YtYjlmOGIxM2VhODIwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDkwL3JlYWxtcy9xdWFudHVtLXN0b2NrIiwic3ViIjoiZjM1ZmM0ZWYtOWY0MS00Yzk1LWFhZjMtNTlmZTRlZjI1ODY5IiwidHlwIjoiU2VyaWFsaXplZC1JRCIsInNpZCI6IjQwNzNkYjJmLTRlYzgtNDE0MS1iY2U5LTgzNzI3OGNlZjNlZCIsInN0YXRlX2NoZWNrZXIiOiJ3dVJtMUJrY3Vfb0lUNWNhUkx2Nlc2bU85WDJqU3dsVnFGRldxZzRRUzlBIn0.O2OO_FbhaF9PqbY7CbXi8jRGgzJ0SwozZDmambEJaxp_t9nmMcO8d9ZUHNJ8_zD40rtQE0mX45fMW7plaMeV1Q",
+      "domain": "localhost",
+      "path": "/realms/quantum-stock/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}
