@@ -1,9 +1,7 @@
-'use server';
 import type InventoryMovement from '@/lib/model/movement.model';
 import type Product from '@/lib/model/product.model';
 
-const API_BASE_URL =
-	process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function transformMovement(apiMovement: InventoryMovement): InventoryMovement {
 	const product: Product = {
@@ -48,7 +46,7 @@ export async function getInventoryMovementsWithPagination(
 		size: size.toString(),
 	});
 
-	const url = `${API_BASE_URL}/api/v1/inventory-movements?${queryParams.toString()}`;
+    const url = `${API_URL}/inventory-movements?${queryParams.toString()}`;
 
 	try {
 		const response = await fetch(url, {
@@ -115,7 +113,7 @@ export async function getAllInventoryMovements(
         queryParams.append('toDate', dateRange.to);
     }
 
-    const url = `${API_BASE_URL}/api/v1/inventory-movements`;
+    const url = `${API_URL}/inventory-movements`;
 
     try {
         const response = await fetch(url, {

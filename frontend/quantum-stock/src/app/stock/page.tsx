@@ -147,20 +147,11 @@ function StockPageContent() {
                     <div className="animate-fade-in-up animation-delay-400">
                         {Array.isArray(products) && products.length > 0 ? (
                             <>
-                                {viewMode === 'table' ? (
-                                    <StockTable
+                                <StockTable
                                         stockItems={products}
                                         onEdit={(product) => handleEditProduct(product)}
                                         onDelete={(product) => handleDeleteProduct(product)}
-                                    />
-                                ) : (
-                                    <ProductCardsView
-                                        items={products}
-                                        onEdit={(_, item) => handleEditProduct(item)}
-                                        onDelete={(id) => handleDeleteProduct({ id } as Product)}
-                                    />
-                                )}
-
+                                />
                                 <Pagination
                                     currentPage={currentPage}
                                     totalPages={totalPages}

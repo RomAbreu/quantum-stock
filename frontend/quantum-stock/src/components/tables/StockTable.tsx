@@ -129,34 +129,27 @@ export default function StockTable({
                     );
                 case 'actions':
                     return (
-                        <div className="flex items-center justify-center gap-1 w-full min-w-[100px]">
+                        <div className="flex items-center justify-center gap-2 w-full min-w-[100px]">
                             {hasEditAccess && (
-                                <Tooltip content="Editar">
-                                    <Button
-                                        isIconOnly
-                                        size="sm"
-                                        variant="light"
-                                        onPress={() => onEdit(item)}
-                                        className="h-8 min-w-8"
-                                    >
-                                        <Icon icon="lucide:edit" className="text-base" />
-                                    </Button>
-                                </Tooltip>
+                                <button
+                                    type="button"
+                                    onClick={() => onEdit(item)}
+                                    className="flex items-center justify-center w-8 h-8 text-blue-600 transition-colors rounded hover:bg-blue-50"
+                                    title="Editar"
+                                >
+                                    <Icon icon="lucide:edit" className="w-4 h-4" />
+                                </button>
                             )}
 
                             {isAdmin && (
-                                <Tooltip content="Eliminar" color="danger">
-                                    <Button
-                                        isIconOnly
-                                        size="sm"
-                                        variant="light"
-                                        color="danger"
-                                        onPress={() => onDelete(item)}
-                                        className="h-8 min-w-8"
-                                    >
-                                        <Icon icon="lucide:trash-2" className="text-base" />
-                                    </Button>
-                                </Tooltip>
+                                <button
+                                    type="button"
+                                    onClick={() => onDelete(item)}
+                                    className="flex items-center justify-center w-8 h-8 text-red-600 transition-colors rounded hover:bg-red-50"
+                                    title="Eliminar"
+                                >
+                                    <Icon icon="lucide:trash-2" className="w-4 h-4" />
+                                </button>
                             )}
                         </div>
                     );

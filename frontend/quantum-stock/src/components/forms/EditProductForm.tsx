@@ -9,7 +9,6 @@ import type Product from '@/lib/model/product.model';
 import {
 	Autocomplete,
 	AutocompleteItem,
-	Button,
 	Divider,
 	Input,
 	Textarea,
@@ -344,28 +343,53 @@ export default function EditProductForm({
 					isDisabled={isLoading || isUpdating}
 				/>
 			</div>
-
+			
 			<div className="flex justify-end gap-3 pt-4">
-				<Button
-					color="danger"
-					variant="flat"
-					onPress={handleCancel}
-					disabled={isLoading || isUpdating}
+				<button
 					type="button"
+					onClick={handleCancel}
+					disabled={isLoading || isUpdating}
+					className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors border rounded-md border-danger-200 bg-danger-50 text-danger-600 hover:bg-danger-100 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					Cancelar
-				</Button>
-				<Button
-					color="primary"
+				</button>
+				
+				<button
 					type="submit"
-					isLoading={isLoading || isUpdating}
-					isDisabled={!isFormValid || isLoading || isUpdating}
-					startContent={
-						!isLoading && !isUpdating ? <Icon icon="lucide:save" /> : null
-					}
+					disabled={!isFormValid || isLoading || isUpdating}
+					className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+						isLoading || isUpdating
+							? 'bg-primary-400 border-primary-400'
+							: 'bg-primary-600 border-primary-600 hover:bg-primary-700'
+					}`}
 				>
+					{isLoading || isUpdating && (
+						<svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+							<circle
+								className="opacity-25"
+								cx="12"
+								cy="12"
+								r="10"
+								stroke="currentColor"
+								strokeWidth="4"
+								fill="none"
+							/>
+							<path
+								className="opacity-75"
+								fill="currentColor"
+								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+							/>
+						</svg>
+					)}
+					{!isLoading && !isUpdating && (
+						<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+							<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+							<polyline points="17,21 17,13 7,13 7,21"/>
+							<polyline points="7,3 7,8 15,8"/>
+						</svg>
+					)}
 					{isLoading || isUpdating ? 'Guardando...' : 'Actualizar Producto'}
-				</Button>
+				</button>
 			</div>
 		</form>
 	);
