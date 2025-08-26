@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/products/delete/**").hasRole("role_admin")
                         .requestMatchers("/actuator").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/integration-api/v1/**").hasRole("role_admin")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
