@@ -51,4 +51,4 @@ jobs:
             pwd
             cd /usr/local/app/
             docker compose pull
-            docker compose up --profile prod -d                
+            docker compose --profile prod up -d
