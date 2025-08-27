@@ -47,6 +47,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v3
+        with:
+           node-version: '20'
+
+      - uses: pnpm/action-setup@v2
+        with:
+           package_json_file: 'frontend/quantum-stock/package.json'
+
+      - name: Install Playwright for E2E tests and run tests
+        working-directory: frontend/quantum-stock
+        run: |
+           pnpm install
+           pnpm exec playwright install
+           pnpm exec playwright test
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -86,3 +101,18 @@ jobs:
             backend/build/reports/tests/cucumberTest/index.html
             backend/target/cucumber-reports.html
           retention-days: 30
+
+      - uses: actions/setup-node@v3
+        with:
+           node-version: '20'
+
+      - uses: pnpm/action-setup@v2
+        with:
+           package_json_file: 'frontend/quantum-stock/package.json'
+
+      - name: Install Playwright for E2E tests and run tests
+        working-directory: frontend/quantum-stock
+        run: |
+           pnpm install
+           pnpm exec playwright install
+           pnpm exec playwright test
