@@ -49,6 +49,6 @@ jobs:
           passphrase: quantum
           script: |
             pwd
-            cd /usr/local/app/
+            cd ~/quantum-stock
             docker compose pull
             docker compose --profile prod up -d
