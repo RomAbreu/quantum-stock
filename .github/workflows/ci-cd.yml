@@ -59,6 +59,8 @@ jobs:
         working-directory: frontend/quantum-stock
         run: |
            pnpm install
+           pnpm build
+           pnpm start
            pnpm exec playwright install
            pnpm exec playwright test
 
