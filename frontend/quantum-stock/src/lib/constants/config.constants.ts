@@ -1,18 +1,15 @@
 export const NEXT_API_URL =
-	process.env.NEXT_API_URL ?? 'http://localhost:8080/api/v1';
-
-export const NEXT_PUBLIC_API_URL =
-	process.env.NEXT_API_URL ?? 'http://localhost:8080/api/v1';
+	process.env.NEXT_PUBLIC_API_URL ?? 'https://api.quantum-stock.rabreus.tech/api/v1';
 
 export const NEXT_KEYCLOAK_URL =
-	process.env.NEXT_KEYCLOAK_URL ?? 'http://localhost:9090';
+	process.env.NEXT_PUBLIC_KEYCLOAK_URL ?? 'https://auth.quantum-stock.rabreus.tech';
 
 export const NEXT_KEYCLOAK_AUTH_URL: string =
-	process.env.NEXT_KEYCLOAK_AUTH_URL ??
-	'http://localhost:9090/realms/quantum-stock/account';
+	process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_URL ??
+	'https://auth.quantum-stock.rabreus.tech/realms/quantum-stock/account';
 
 export const NEXT_KEYCLOAK_REALM =
-	process.env.NEXT_KEYCLOAK_REALM ?? 'quantum-stock';
+	process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? 'quantum-stock';
 
 export const NEXT_KEYCLOAK_CLIENT_ID =
-	process.env.NEXT_KEYCLOAK_CLIENT_ID ?? 'quantum-stock-frontend';
+	process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID ?? 'quantum-stock-frontend';
