@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Stock Page - Visual Tests', () => {
     test.describe('Unauthenticated User @unauthenticated', () => {
         test.beforeEach(async ({ page }) => {
-            await page.goto('http://localhost:3000/stock');
+            await page.goto('https://quantum-stock.rabreus.tech/stock');
             await page.waitForTimeout(3000);
             await page.waitForLoadState('networkidle');
         });
@@ -46,7 +46,7 @@ test.describe('Stock Page - Visual Tests', () => {
 
     test.describe('Employee User @employee', () => {
         test.beforeEach(async ({ page }) => {
-            await page.goto('http://localhost:3000/stock');
+            await page.goto('https://quantum-stock.rabreus.tech/stock');
             await page.waitForTimeout(3000);
             await page.waitForLoadState('networkidle');
         });
@@ -86,7 +86,7 @@ test.describe('Stock Page - Visual Tests', () => {
 
     test.describe('Admin User @admin', () => {
         test.beforeEach(async ({ page }) => {
-            await page.goto('http://localhost:3000/stock');
+            await page.goto('https://quantum-stock.rabreus.tech/stock');
             await page.waitForTimeout(3000);
             await page.waitForLoadState('networkidle');
         });

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Edit Product Modal Tests', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:3000/stock');
+        await page.goto('https://quantum-stock.rabreus.tech/stock');
         await page.waitForTimeout(3000);
         await page.waitForLoadState('networkidle');
     });

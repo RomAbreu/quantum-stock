@@ -60,7 +60,7 @@ test.describe('Homepage - authenticated as admin @admin', () => {
 
 test.describe('Homepage - authenticated as employee @employee', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:3000');
+        await page.goto('https://quantum-stock.rabreus.tech');
         await page.waitForTimeout(5000);
         await page.waitForLoadState('networkidle');
     });

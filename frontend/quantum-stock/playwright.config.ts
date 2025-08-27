@@ -8,7 +8,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: 'http://localhost:3000',
+        baseURL: 'https://quantum-stock.rabreus.tech',
         ignoreHTTPSErrors: true,
         trace: 'on-first-retry',
         actionTimeout: 0,
