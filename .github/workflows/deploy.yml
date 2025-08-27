@@ -46,6 +46,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
+          passphrase: quantum
           script: |
             pwd
             cd /usr/local/app/
