@@ -52,3 +52,23 @@ jobs:
             cd ~/quantum-stock
             docker compose pull
             docker compose --profile prod up -d
+            sleep 45
+            
+      - uses: actions/setup-node@v3
+        with:
+           node-version: '20'
+
+      - uses: pnpm/action-setup@v2
+        with:
+           package_json_file: 'frontend/quantum-stock/package.json'
+
+      - name: Install Playwright for E2E tests and run tests
+        working-directory: frontend/quantum-stock
+        run: |
+           pnpm install
+           pnpm build
+           pnpm start
+           pnpm exec playwright install
+           pnpm exec playwright test
+
+           
