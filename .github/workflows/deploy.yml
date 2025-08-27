@@ -1,0 +1,53 @@
+name: CI/CD - Deploy to Production
+
+on:
+  pull_request: { branches : [ main ] }
+
+jobs:
+  test:
+    environment: Production
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Get repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          
+      - name: Build and push Docker frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend/quantum-stock
+          file: frontend/quantum-stock/Dockerfile
+          push: true
+          tags: |
+            stevenmr22/quantum-stock-frontend:latest
+      
+      - name: Build and push Docker backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            stevenmr22/quantum-stock-backend:latest
+
+      - name: SSH into prod server and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            pwd
+            cd /usr/local/app/
+            docker compose pull
+            docker compose up --profile prod -d                
