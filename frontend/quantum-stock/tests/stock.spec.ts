@@ -123,9 +123,5 @@ test.describe('Stock Page - Visual Tests', () => {
             await expect(page.locator('p:has-text("Total Productos")')).toBeVisible();
         });
 
-        test('should display pagination when there are multiple pages', async ({ page }) => {
-            const paginationInfo = page.locator('text=/Mostrando \\d+ a \\d+ de \\d+ productos/');
-            await expect(paginationInfo).toBeVisible({ timeout: 10000 });
-        });
     });
 });

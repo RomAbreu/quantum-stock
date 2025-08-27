@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "AUTH_SESSION_ID",
-      "value": "ODliYmRiYzAtYmFiMy00NDA0LWFlZWYtYmYyODViNmFhNDFhLlQ1aFMxOXdRSFNFYzk5WElPRFZvanRfQmJ3ckViQXlJU2tOVkItWV9EQVlDSU5WSmxJR1o2cTBIbW9LSUREWFZSNURhaU81S2VuTVRQUnVCcEFTeDFB",
+      "value": "NTUyNDMzZDUtMWVmMC00YjIzLWFmY2MtODA1Y2Q0NTcyMDUxLnE2MV82UURqNUVFLWpTWDJmT0g3VF9xX3JfLXdXQzFSMXZKaTEwVWRraUdEbmIxVm83VElXVUgwdEROREpQV1RoRE9RVnVESTFnOGJONDl5bGRlNl93",
       "domain": "auth.quantum-stock.rabreus.tech",
       "path": "/realms/quantum-stock/",
       "expires": -1,
@@ -12,27 +12,27 @@
     },
     {
       "name": "KC_AUTH_SESSION_HASH",
-      "value": "I+Mnqq1yBKVrpy6SfuKgLtDzwvMgFpSguKy9RnOHRFc",
+      "value": "DzDR6y5tMc47oFSXOE9KUI6DOFsRs2GU7xYfTMbCaMA",
       "domain": "auth.quantum-stock.rabreus.tech",
       "path": "/realms/quantum-stock/",
-      "expires": 1756283582.970515,
+      "expires": 1756284471.758557,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "KEYCLOAK_SESSION",
-      "value": "I-Mnqq1yBKVrpy6SfuKgLtDzwvMgFpSguKy9RnOHRFc",
+      "value": "DzDR6y5tMc47oFSXOE9KUI6DOFsRs2GU7xYfTMbCaMA",
       "domain": "auth.quantum-stock.rabreus.tech",
       "path": "/realms/quantum-stock/",
-      "expires": 1756319522.970608,
+      "expires": 1756320411.758788,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "KEYCLOAK_IDENTITY",
-      "value": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxMmFiY2VlZS03NWUxLTRiMmQtYjg5Ny1hMTFlZDUwYzllNjMifQ.eyJleHAiOjE3NTYzMTk1MjIsImlhdCI6MTc1NjI4MzUyMiwianRpIjoiNDBhNTYwNzktYTk0OC00NDgwLWI3NTQtNDlhMGNhZmRhYzY3IiwiaXNzIjoiaHR0cHM6Ly9hdXRoLnF1YW50dW0tc3RvY2sucmFicmV1cy50ZWNoL3JlYWxtcy9xdWFudHVtLXN0b2NrIiwic3ViIjoiMmVjOTI2NjgtMGY3Yy00NzQ4LWI1ZDItMGZjNzNmOGM4YTQwIiwidHlwIjoiU2VyaWFsaXplZC1JRCIsInNpZCI6Ijg5YmJkYmMwLWJhYjMtNDQwNC1hZWVmLWJmMjg1YjZhYTQxYSIsInN0YXRlX2NoZWNrZXIiOiJHcXdkZ0tjbE01N25OSWUtTzhXUkJjd0diQWJHSm9KMktKaVNjOGEwX0RZIn0.2LBN8NwTF84ehZBwptACtUxuzdrZzsgIoyh6XV9tXi6cbkiTqQdiUc75YSkJaEtzkNsqupMi34l21tY00lei9Q",
+      "value": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxMmFiY2VlZS03NWUxLTRiMmQtYjg5Ny1hMTFlZDUwYzllNjMifQ.eyJleHAiOjE3NTYzMjA0MTEsImlhdCI6MTc1NjI4NDQxMSwianRpIjoiZmM1NDIxOTgtMGU1Ny00ZTBiLWIwNWQtNDI4MmIxZWUwNGM5IiwiaXNzIjoiaHR0cHM6Ly9hdXRoLnF1YW50dW0tc3RvY2sucmFicmV1cy50ZWNoL3JlYWxtcy9xdWFudHVtLXN0b2NrIiwic3ViIjoiMmVjOTI2NjgtMGY3Yy00NzQ4LWI1ZDItMGZjNzNmOGM4YTQwIiwidHlwIjoiU2VyaWFsaXplZC1JRCIsInNpZCI6IjU1MjQzM2Q1LTFlZjAtNGIyMy1hZmNjLTgwNWNkNDU3MjA1MSIsInN0YXRlX2NoZWNrZXIiOiJTY1JVZlFYMWRQdUE0Qlo4ajkyWnZJXzF3Ny1YNnBjallBWXJfNFhmMVdJIn0.5LuRnypmG6zreoUryFL004nGYqFOSUy_ne6OoG5tu0s4chBMyUXSksneNffuQ5Rawv8CjEBTkB8pkzf_r8t-SA",
       "domain": "auth.quantum-stock.rabreus.tech",
       "path": "/realms/quantum-stock/",
       "expires": -1,
