@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Footer', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:3000');
+        await page.goto('https://quantum-stock.rabreus.tech/');
         await page.waitForTimeout(3000);
         await page.waitForLoadState('networkidle');
     });
@@ -27,8 +27,8 @@ test.describe('Footer', () => {
     test('logo click should navigate to home', async ({ page }) => {
         const logoLink = page.locator('footer a').filter({ has: page.locator('img[alt="QuantumStock Logo"]') });
         await logoLink.click();
-        await page.waitForURL('http://localhost:3000/');
-        await expect(page).toHaveURL('http://localhost:3000/');
+        await page.waitForURL('https://quantum-stock.rabreus.tech/');
+        await expect(page).toHaveURL('https://quantum-stock.rabreus.tech/');
     });
 
     test('should have correct footer styling', async ({ page }) => {
