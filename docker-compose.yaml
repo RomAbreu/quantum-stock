@@ -1,23 +1,36 @@
 services:
   traefik:
-    image: traefik:v3.5
+    image: traefik:v3.1
     command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--providers.docker=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=smmr0001@ce.pucmm.edu.do"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=smmr0001@ce.pucmm.edu.do"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.quantum-stock.rabreus.tech`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
     restart: always
+    networks:
+      - quantum-stock-network
 
   inventory-db-service:
     image: mysql:latest
@@ -30,7 +43,10 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_TCP_PORT=${MYSQL_PORT}
     volumes:
-      - ${VOLUME_PATH}:/var/lib/mysql
+      - quantum_stock_data:/var/lib/mysql
+    restart: always
+    networks:
+      - quantum-stock-network
 
   test-db-service:
     image: mysql:latest
@@ -46,17 +62,50 @@ services:
       - test
 
   keycloak-service:
-    image: keycloak/keycloak:26.2
-    ports:
-        - "${KEYCLOAK_PORT}:${KEYCLOAK_PORT}"
+    image: quay.io/keycloak/keycloak:26.2.5
+    expose:
+      - ${KEYCLOAK_PORT:-9090}
+    user: root
     environment:
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/keycloak-realm-export.json
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-export.json
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: "xforwarded"
+      KC_HOSTNAME: auth.quantum-stock.rabreus.tech
+      KC_HEALTH_ENABLED: true
     volumes:
       - ${KEYCLOAK_VOLUME_PATH}:/opt/keycloak/data
-      - ./backend/keycloak-realm-export.json:/opt/keycloak/data/import/keycloak-realm-export.json
-    command: [ "start-dev", "--http-port", "${KEYCLOAK_PORT:-9090}", "--import-realm" ]
+      - ./backend/keycloak-realm-export-prod.json:/opt/keycloak/data/import/keycloak-realm-export.json
+    command:
+      [
+        "start-dev",
+        "--http-port=${KEYCLOAK_PORT:-9090}",
+        "--hostname-strict=false",
+        "--proxy-headers=xforwarded",
+        "--import-realm",
+      ]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: http://localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;",
+        ]
+      start_period: 10s
+      interval: 30s
+      retries: 3
+      timeout: 5s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`auth.quantum-stock.rabreus.tech`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=9090"
+      - "traefik.http.routers.keycloak.service=keycloak"
+    networks:
+      - quantum-stock-network
 
   app-service:
     image: stevenmr22/quantum-stock-backend:latest
@@ -67,34 +116,47 @@ services:
       - DATABASE_PASSWORD=${MYSQL_PASSWORD}
       - KEYCLOAK_HOST=${KEYCLOAK_HOST}
       - KEYCLOAK_PORT=${KEYCLOAK_PORT}
-    ports:
-      - ${SERVER_PORT:-8080}:${SERVER_PORT:-8080}
+    expose:
+      - ${SERVER_PORT:-8080}
     restart: always
     depends_on:
-      - inventory-db-service
+      inventory-db-service:
+        condition: service_started
+      keycloak-service:
+        condition: service_healthy
     profiles:
       - prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.quantum-stock.rabreus.tech`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+    networks:
+      - quantum-stock-network
 
   frontend-service:
     image: stevenmr22/quantum-stock-frontend:latest
     env_file:
-        - ./frontend/quantum-stock/.env
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-
+      - ./frontend/quantum-stock/.env
+    expose:
+      - "${FRONTEND_PORT:-3000}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`quantum-stock.rabreus.tech`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-
+    volumes:
+      - ./frontend/quantum-stock/.env:/app/.env
     restart: always
     depends_on:
       - app-service
-      - traefik
+      - keycloak-service
     profiles:
       - prod
+    networks:
+      - quantum-stock-network
 
   prometheus-service:
     image: prom/prometheus:latest
@@ -103,7 +165,9 @@ services:
     volumes:
       - ./backend/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
-    command: [ "--config.file=/etc/prometheus/prometheus.yml" ]
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    networks:
+      - quantum-stock-network
 
   grafana-service:
     image: grafana/grafana
@@ -118,7 +182,14 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus-service
+    networks:
+      - quantum-stock-network
 
 volumes:
   prometheus_data:
   grafana_data:
+  quantum_stock_data:
+
+networks:
+  quantum-stock-network:
+    driver: bridge
